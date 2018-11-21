@@ -1,47 +1,132 @@
+import logging
 import networkx as nx
+import matplotlib.pyplot as plt
 
-# TODO: Replace prints by logs.
+logging.basicConfig(level=logging.DEBUG, filename='gen_dataset.log',
+    filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+
+# Constants.
+NORM_TYPES = ['speed', 'prohibition']
 
 # Rules.
-max_vel = 2
-forb_state = 5
+MAX_VEL = 2
+FORB_STATE = 5
 
 
-def distance(s1, s2):
-    
-    g, init = s1
-    _, goal = s2
+class GenDataset(object):
+    """Generate Dataset."""
+    def __init__(self, graph, plan, output_file, norms={},
+        norm_types=NORM_TYPES):
+        logging.debug("Initiating GenDatsetObj.")
+        self.graph = graph
+        self.plan = plan
+        self.out = output_file
+        self.norms = norms
+        self.norm_types = norm_types
 
-    return nx.shortest_path_length(g, init, goal)
+    def add_norm(self, norm_type, norm):
+        """Add a new norm."""
+        logging.debug("Adding new norm w/ type: {} and rule: {}".format(norm_type, norm))
+        assert norm_type in self.norm_types, "{} must be in Norm types: {}".format(norm_type, self.norm_types)
 
+        if norm_type in self.norm_types:
+            if norm_type in self.norms:
+                self.norms[norm_type].append(norm)
+            else:
+                self.norms[norm_type] = [norm]
 
-def verify_plan(plan):
+        logging.debug("New set of norms: {}".format(self.norms))
 
-    prev_state = None
+    def save_graph(self):
+        nx.draw(self.graph)
+        plt.savefig("graph.png")
 
-    for state in plan:
-        graph, pos = state
-        if pos == forb_state:
-            print "Violation! Entered in a forbidden state."
-        if prev_state:
-            if distance(prev_state, state) > max_vel:
-                print "Violation! Max speed reached!"
-                print prev_state[1], state[1]
+    def _distance(self, s1, s2):
+        """
+            Measure the distance between two nodes.
 
-        prev_state = state
+            :param s1: state containing graph and car position.
+            :type s1: tuple
+            :param s2: state containing graph and car position.
+            :type s2: tuple
+        """
+        g, init = s1
+        _, goal = s2
 
+        return nx.shortest_path_length(g, init, goal)
+
+    def verify_plan(self):
+
+        prev_state = None
+
+        for state in self.plan:
+            # Run over states.
+            graph, pos = state
+            violation = 0
+
+            for norm_type in self.norms:
+
+                if norm_type == 'speed':
+                    if prev_state:
+                        violation = self.check_speed(prev_state, state)
+                        if violation:
+                            break
+                elif norm_type == 'prohibition':
+                    violation = self.check_prohibition(state)
+                    if violation:
+                        break
+
+            self.save_to_file(state, violation)
+            prev_state = state
+
+    def save_to_file(self, state, violation):
+
+        g, pos = state
+
+        logging.debug("Saving state in position %d with class %d" % (pos,
+            violation))
+        x = ''.join(str(x) + str(y) for x, y in map(list, g.edges())) + str(pos)
+
+        with open(self.out, 'a') as a_file:
+            a_file.write("%s %d\n" % (x, violation))
+
+    def check_speed(self, prev_state, state):
+        
+        dist = self._distance(prev_state, state)
+        print "dist", dist
+
+        for norm in self.norms['speed']:
+            print "norm", norm
+
+            if dist > norm:
+                return 1
+        
+        return 0        
+
+    def check_prohibition(self, state):
+        _, position = state
+
+        if position in self.norms['prohibition']:
+            return 1
+
+        return 0
 
 def main():
     nodes = [0,1,2,3,4,5,6,7,8,9]
     arcs = [(0,0), (0,1), (0,7), (1,2), (1,5), (2,3), (3,4), (3,8), (4,9),
             (5,0), (6,3), (7,2), (7,6), (8,3), (8,7), (9,4), (9,8), (9,9)]
-    g = nx.Graph()
-    g.add_nodes_from(nodes)
-    g.add_edges_from(arcs)
-    plan = [(g, 1), (g, 2), (g, 4), (g, 5), (g, 7), (g, 2)]
+    G = nx.DiGraph()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(arcs)
+    plan = [(G, 1), (G, 5), (G, 4), (G, 2), (G, 7), (G, 2)]
 
-    verify_plan(plan)
+    # nx.draw(G)
+    # plt.savefig("graph.png")
 
+    gd = GenDataset(G, plan, 'dataset.txt')
+    gd.add_norm('speed', MAX_VEL)
+    gd.add_norm('prohibition', FORB_STATE)
+    gd.verify_plan()
 
 if __name__ == '__main__':
     main()

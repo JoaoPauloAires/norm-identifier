@@ -5,13 +5,8 @@ import matplotlib.pyplot as plt
 logging.basicConfig(level=logging.DEBUG, filename='gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
-# Constants.
-NORM_TYPES = ['speed', 'prohibition']
 
-# Rules.
-MAX_VEL = 2
-FORB_STATE = 5
-
+# Create a file with all definitions of graph, states, and plan.
 
 class GenDataset(object):
     """Generate Dataset."""
@@ -40,20 +35,6 @@ class GenDataset(object):
     def save_graph(self):
         nx.draw(self.graph)
         plt.savefig("graph.png")
-
-    def _distance(self, s1, s2):
-        """
-            Measure the distance between two nodes.
-
-            :param s1: state containing graph and car position.
-            :type s1: tuple
-            :param s2: state containing graph and car position.
-            :type s2: tuple
-        """
-        g, init = s1
-        _, goal = s2
-
-        return nx.shortest_path_length(g, init, goal)
 
     def verify_plan(self):
 
@@ -101,7 +82,7 @@ class GenDataset(object):
             if dist > norm:
                 return 1
         
-        return 0        
+        return 0
 
     def check_prohibition(self, state):
         _, position = state
@@ -119,6 +100,9 @@ def main():
     G.add_nodes_from(nodes)
     G.add_edges_from(arcs)
     plan = [(G, 1), (G, 5), (G, 4), (G, 2), (G, 7), (G, 2)]
+
+    # Set plan by reading from a file.
+        
 
     # nx.draw(G)
     # plt.savefig("graph.png")

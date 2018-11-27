@@ -38,14 +38,13 @@ class Agent(object):
         if prev_state.g[prev_state.car_pos]['traf_light'] == 'red':
             return VIOLATION
 
-
         return N_VIOLATION
 
     def check_speed(self, prev_state, state):
         """
             Verify if the speed by the distance between two states.
         """
-        speed_limit = state.g[state.car_pos]['speed']
+        speed_limit = state.g[state.car_pos]['speed_limit']
 
         if speed_limit != 'free':
 

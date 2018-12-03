@@ -23,19 +23,21 @@ class Agent(object):
         cur_state = plan.cur_state
         prev_state = plan.prev_state
         car_pos = cur_state.car_pos
-        states = plan.states
 
         violation = N_VIOLATION
+
+        if car_pos not in self.nodes:
+            self.save_to_file()
 
         if prev_state:
             violation = self.check_speed(prev_state, cur_state)
             if violation:
                 return violation
 
-        if cur_state.g[car_pos]['prohibition']:
+        if cur_state.g.node[car_pos]['prohibition']:
             return VIOLATION
 
-        if prev_state.g[prev_state.car_pos]['traf_light'] == 'red':
+        if prev_state.g.node[prev_state.car_pos]['traf_light'] == 'red':
             return VIOLATION
 
         return N_VIOLATION
@@ -44,7 +46,7 @@ class Agent(object):
         """
             Verify if the speed by the distance between two states.
         """
-        speed_limit = state.g[state.car_pos]['speed_limit']
+        speed_limit = state.g.node[state.car_pos]['speed_limit']
 
         if speed_limit != 'free':
 

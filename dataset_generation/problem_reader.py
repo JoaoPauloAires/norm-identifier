@@ -4,99 +4,7 @@ import copy
 import agent
 import state
 import logging
-import argparse
 import networkx as nx
-import matplotlib.pyplot as plt
-
-logging.basicConfig(level=logging.DEBUG, filename='gen_dataset.log',
-    filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-
-
-# Create a file with all definitions of graph, states, and plan.
-
-class GenDataset(object):
-    """Generate Dataset."""
-    def __init__(self, graph, plan, output_file, norms={},
-        norm_types=None):
-        logging.debug("Initiating GenDatsetObj.")
-        self.graph = graph
-        self.plan = plan
-        self.out = output_file
-        self.norms = norms
-        self.norm_types = norm_types
-
-    def add_norm(self, norm_type, norm):
-        """Add a new norm."""
-        logging.debug("Adding new norm w/ type: {} and rule: {}".format(norm_type, norm))
-        assert norm_type in self.norm_types, "{} must be in Norm types: {}".format(norm_type, self.norm_types)
-
-        if norm_type in self.norm_types:
-            if norm_type in self.norms:
-                self.norms[norm_type].append(norm)
-            else:
-                self.norms[norm_type] = [norm]
-
-        logging.debug("New set of norms: {}".format(self.norms))
-
-    def save_graph(self):
-        nx.draw(self.graph)
-        plt.savefig("graph.png")
-
-    def verify_plan(self):
-
-        prev_state = None
-
-        for state in self.plan:
-            # Run over states.
-            graph, pos = state
-            violation = 0
-
-            for norm_type in self.norms:
-
-                if norm_type == 'speed':
-                    if prev_state:
-                        violation = self.check_speed(prev_state, state)
-                        if violation:
-                            break
-                elif norm_type == 'prohibition':
-                    violation = self.check_prohibition(state)
-                    if violation:
-                        break
-
-            self.save_to_file(state, violation)
-            prev_state = state
-
-    def save_to_file(self, state, violation):
-
-        g, pos = state
-
-        logging.debug("Saving state in position %d with class %d" % (pos,
-            violation))
-        x = ''.join(str(x) + str(y) for x, y in map(list, g.edges())) + str(pos)
-
-        with open(self.out, 'a') as a_file:
-            a_file.write("%s %d\n" % (x, violation))
-
-    def check_speed(self, prev_state, state):
-        
-        dist = self._distance(prev_state, state)
-        print "dist", dist
-
-        for norm in self.norms['speed']:
-            print "norm", norm
-
-            if dist > norm:
-                return 1
-        
-        return 0
-
-    def check_prohibition(self, state):
-        _, position = state
-
-        if position in self.norms['prohibition']:
-            return 1
-
-        return 0
 
 
 def build_graph(problem_dict):
@@ -170,7 +78,6 @@ def build_agents(problem_dict):
     agents = list()
 
     for nodes in problem_dict['ag']:
-
         ag = agent.Agent(nodes)
         agents.append(ag)        
 
@@ -181,7 +88,15 @@ def read_problem(problem_path, b_plans=True, b_agents=True):
     """
         Read problem file and create the structure for states and plan.
     
-        :return: A graph structure and a plan.
+        :param problem_path: Path to a file containing a problem description.
+        :type problem_path: str
+        :param b_plans: Flag variable to read plans from problem
+            description.
+        :type b_plans: bool
+        :param b_agents: Flag variable to read agents from problem
+            description.
+        :type b_agents: bool
+        :return: A graph structure, plans, and agents.
     """
     logging.debug("Start reading from {}".format(problem_path))
     lines = open(problem_path, 'r').readlines()
@@ -221,22 +136,3 @@ def read_problem(problem_path, b_plans=True, b_agents=True):
         elems.append(agents)
 
     return elems
-
-
-def main(problem_path, output_file):
-    # Set graph and plans by reading from a file.
-    G, plans, agents = read_problem(problem_path)
-
-    # gd = GenDataset(G, plans, agents, output_file)
-    # gd.run_plan()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate dataset.')
-    parser.add_argument('problem_path', type=str,
-        help='Path to a file containing problem definitions.')
-    parser.add_argument('output_file', type=str,
-        help='Path to output the generated dataset.')
-
-    args = parser.parse_args()
-    main(args.problem_path, args.output_file)

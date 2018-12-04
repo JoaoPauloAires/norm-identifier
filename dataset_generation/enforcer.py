@@ -1,3 +1,4 @@
+import logging
 import networkx as nx
 
 # Constants.
@@ -5,69 +6,62 @@ VIOLATION = 1
 N_VIOLATION = 0
 
 
-class Agent(object):
-    """Build a monitor agent."""
-    def __init__(self, nodes):
+class Enforcer(object):
+    """Build an enforcer agent."""
+    def __init__(self, enf_id, nodes):
         """
             :param nodes: list containing node numbers.
-            :type nodes: list
-            :param norms: norms divided by categories
-            :type norms: dict
-        """        
+            :type nodes: list.
+        """
+        self.enf_id = enf_id
         self.nodes = nodes
     
-    def verify_violation(plan):
+    def verify_violation(env):
         """
             Verify a violation in a certain state.
         """
-        cur_state = plan.cur_state
-        prev_state = plan.prev_state
-        car_pos = cur_state.car_pos
+        verification = [] 
+        logging.debug("Enforcer %d started the violation verification." % 
+            self.enf_id)
+        g = env.graph
+        for n in g.nodes:
+            
+            if n in self.nodes:
+                violation = N_VIOLATION
 
-        violation = N_VIOLATION
+                # Check which cars are in this node.
+                car_ids = g.node[n]['cars']
 
-        if car_pos not in self.nodes:
-            self.save_to_file()
+                for car_id in car_ids:
 
-        if prev_state:
-            violation = self.check_speed(prev_state, cur_state)
-            if violation:
-                return violation
+                    # Check if the car is in a forbidden state.
+                    if 'prohibition' in g.node[n]:
+                        if g.node[n]['prohibition']:
+                            violation = VIOLATION
+                            logging.debug("Enforcer %d detected a prohibition\
+                             violation in node %d commited by car %d." % (
+                                self.enf_id, n, car_id))
+                            verification.append((n, violation))
+                            continue
+                    # Check if the car didn't cross a red signal.                
+                    car = env.cars[car_id]
+                    prev_node = car.prev_pos
+                    if 'signal' in g.node[prv_node]:
+                        if g.node[prev_node]['signal']:
+                            violation = VIOLATION
+                            logging.debug("Enforcer %d detected a signal \
+                             violation in node %d commited by car %d." % (
+                                self.enf_id, n, car_id))
+                            verification.append((n, violation))
+                            continue
 
-        if cur_state.g.node[car_pos]['prohibition']:
-            return VIOLATION
-
-        if prev_state.g.node[prev_state.car_pos]['traf_light'] == 'red':
-            return VIOLATION
-
-        return N_VIOLATION
-
-    def check_speed(self, prev_state, state):
-        """
-            Verify if the speed by the distance between two states.
-        """
-        speed_limit = state.g.node[state.car_pos]['speed_limit']
-
-        if speed_limit != 'free':
-
-            dist = self._distance(prev_state, state)
-
-            if dist > speed_limit:
-                return VIOLATION
-        
-        return N_VIOLATION
-
-    def _distance(self, s1, s2):
-        """
-            Measure the distance between two nodes.
-
-            :param s1: state containing graph and car position.
-            :type s1: tuple
-            :param s2: state containing graph and car position.
-            :type s2: tuple
-        """
-        init = s1.car_pos
-        goal = s2.car_pos
-        graph = s2.g
-
-        return nx.shortest_path_length(graph, init, goal)
+                    # Check if car is in a lower or equal speed defined
+                    # for the node.
+                    if 'speed' in g.node[n]:
+                        if car.speed > g.node[n]['speed']:
+                            violation = VIOLATION
+                            logging.debug("Enforcer %d detected a speed \
+                             violation in node %d commited by car %d." % (
+                                self.enf_id, n, car_id))
+                            verification.append((n, violation))
+                            continue

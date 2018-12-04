@@ -1,5 +1,3 @@
-
-
 class Observer(object):
     """Build a monitor agent."""
     def __init__(self, nodes, outputfile):

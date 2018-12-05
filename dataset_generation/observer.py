@@ -1,12 +1,16 @@
+import logging
+
+
 class Observer(object):
     """Build a monitor agent."""
-    def __init__(self, nodes, outputfile):
+    def __init__(self, obs_id, nodes, outputfile):
         """
             :param nodes: list containing node numbers.
             :type nodes: list
             :param norms: norms divided by categories
             :type norms: dict
-        """        
+        """
+        self.obs_id = obs_id
         self.nodes = nodes
         self.output = outputfile
     

@@ -1,6 +1,7 @@
 import sys
 import logging
 import argparse
+import environment
 import problem_reader
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -8,8 +9,10 @@ import matplotlib.pyplot as plt
 logging.basicConfig(level=logging.DEBUG, filename='gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
-# Create a file with all definitions of graph, states, and plan.
+NODE_PROB = 0.5
 
+
+# Create a file with all definitions of graph, states, and plan.
 class GenDataset(object):
     """Generate Dataset."""
     def __init__(self, graph, plans, agents, output_file):
@@ -24,13 +27,10 @@ class GenDataset(object):
         plt.savefig("graph.png")
 
     def run_plans(self):
-
         # Run over plans.
         for plan in self.plans:
-
             # Run over plan states.
             for i in range(len(plan.states)):
-                
                 # Run over agents.
                 for ag in self.agents: 
                     # Check violations.
@@ -53,9 +53,9 @@ class GenDataset(object):
 
 def main(problem_path, output_file):
     # Set graph, plans, and agents by reading from a file.
-    G, plans, agents = problem_reader.read_problem(problem_path)
-
-    gd = GenDataset(G, plans, agents, output_file)
+    G, cars, obs, enfs = problem_reader.read_problem(problem_path)
+    env = environment.Environment(G, NODE_PROB, cars, obs, enfs)
+    # gd = GenDataset(G, plans, agents, output_file)
     # gd = GenDataset(G, plans, agents, output_file)
     # gd.run_plan()
 

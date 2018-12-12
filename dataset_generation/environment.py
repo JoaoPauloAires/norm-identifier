@@ -40,10 +40,13 @@ class Environment(object):
                     self.graph.node[n]['prohibition'] = (cur_status * 
                         (-1)) + 1                    
 
-    def update_car_position(car, prev_pos):
+    def update_car_position(self, car, prev_pos):
         """
             Change the current position for car.
         """
         index = self.graph.node[prev_pos]['car'].index(car.id)
         self.graph.node[prev_pos]['car'].pop(index)
-        self.graph.node[car.cur_pos]['car'].append(car.id)
+        if 'car' in self.graph.node[car.cur_pos]:
+            self.graph.node[car.cur_pos]['car'].append(car.id)
+        else:
+            self.graph.node[car.cur_pos]['car'] = [car.id]

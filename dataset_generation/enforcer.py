@@ -16,7 +16,7 @@ class Enforcer(object):
         self.enf_id = enf_id
         self.nodes = nodes
     
-    def verify_violation(env):
+    def verify_violation(self, env):
         """
             Verify a violation in a certain state.
         """
@@ -30,7 +30,11 @@ class Enforcer(object):
                 violation = N_VIOLATION
 
                 # Check which cars are in this node.
-                car_ids = g.node[n]['cars']
+                if 'car' in g.node[n]:
+                    car_ids = g.node[n]['car']
+                else:
+                    continue
+                found_violation = False
 
                 for car_id in car_ids:
 
@@ -41,18 +45,22 @@ class Enforcer(object):
                             logging.debug("Enforcer %d detected a prohibition\
                              violation in node %d commited by car %d." % (
                                 self.enf_id, n, car_id))
-                            verification.append((n, violation))
+                            verification.append((self.enf_id, n, violation,
+                                car_id))
+                            found_violation = True
                             continue
                     # Check if the car didn't cross a red signal.                
                     car = env.cars[car_id]
                     prev_node = car.prev_pos
-                    if 'signal' in g.node[prv_node]:
+                    if 'signal' in g.node[prev_node]:
                         if g.node[prev_node]['signal']:
                             violation = VIOLATION
                             logging.debug("Enforcer %d detected a signal \
                              violation in node %d commited by car %d." % (
                                 self.enf_id, n, car_id))
-                            verification.append((n, violation))
+                            verification.append((self.enf_id, n, violation,
+                                car_id))
+                            found_violation = True
                             continue
 
                     # Check if car is in a lower or equal speed defined
@@ -63,5 +71,12 @@ class Enforcer(object):
                             logging.debug("Enforcer %d detected a speed \
                              violation in node %d commited by car %d." % (
                                 self.enf_id, n, car_id))
-                            verification.append((n, violation))
+                            verification.append((self.enf_id, n, violation,
+                                car_id))
+                            found_violation = True
                             continue
+                
+                if not found_violation:
+                    verification.append((self.enf_id, n, violation, None))
+                    
+        return verification

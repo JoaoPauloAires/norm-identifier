@@ -29,6 +29,15 @@ def build_graph(problem_dict):
         # Add limit to nodes.
         for n in nodes:
             G.node[n]['speed'] = limit
+    # Add Cars.
+    logging.debug("Adding cars: {}".format(problem_dict['car']))
+    for ind, c in enumerate(problem_dict['car']):
+        init_pos, _, _, _ = c[0].split('-')
+        init_pos = int(init_pos)
+        if 'car' not in G.node[init_pos]:
+            G.node[init_pos]['car'] = [ind]
+        else:
+            G.node[init_pos]['car'].append(ind)
 
     # Set forbidden nodes.
     set_feature(G, problem_dict['p'], 'prohibition')
@@ -51,7 +60,8 @@ def build_cars(problem_dict):
     logging.debug("Building cars: {}".format(problem_dict['car']))
     for ind, c in enumerate(problem_dict['car']):
         init_pos, goal_pos, speed, speed_prob = c[0].split('-')
-        cars[ind] = car.Car(ind, init_pos, goal_pos, speed, speed_prob)
+        cars[ind] = car.Car(ind, int(init_pos), int(goal_pos), int(speed),
+            float(speed_prob))
 
     return cars
 
@@ -60,7 +70,7 @@ def build_enfs(problem_dict):
     enfs = dict()
     logging.debug("Building enfs: {}".format(problem_dict['enf']))
     for ind, enf in enumerate(problem_dict['enf']):
-        nodes = enf[0].split('-')
+        nodes = map(int, enf[0].split('-'))
         enfs[ind] = enforcer.Enforcer(ind, nodes)
 
     return enfs
@@ -70,10 +80,10 @@ def build_obs(problem_dict):
     obs = dict()
     logging.debug("Building obs: {}".format(problem_dict['ob']))
     for ind, ob in enumerate(problem_dict['ob']):
-        nodes = ob[0].split('-')
+        nodes = map(int, ob[0].split('-'))
         obs[ind] = observer.Observer(ind, nodes, str(ind)+'.txt')
 
-    return observer
+    return obs
 
 
 def read_problem(problem_path):

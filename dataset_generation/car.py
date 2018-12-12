@@ -34,21 +34,29 @@ class Car(object):
             return self.goal
         else:
             g = env.graph
+            logging.debug("Car {}: cur_pos: {}; goal: {}".format(self.id,
+                self.cur_pos, self.goal))
             # Calculate shortest path.
-            path = nx.shortest_path_length(g, self.cur_pos, self.goal)
-            next_node = path[0]
+            path = nx.shortest_path(g, self.cur_pos, self.goal)
+            next_node = path[1]
+            logging.debug("The next node shall be %d" % next_node)
             # Check probability to go to the next node.
-            prob = g[self.cur_pos][next_node]['prob']
-            # Get next state speed limit.
-            speed = g.node[next_node]['speed']
-            
-            if random.random() <= prob:
+            prob = g[self.cur_pos][next_node]['weight']
+            rand_prob = random.random()
+            logging.debug("Next node ({}) prob: {}".format(next_node, prob))
+            logging.debug("Random prob: {}".format(rand_prob))
+            if rand_prob <= prob:
                 # Go to next node.
                 self.prev_pos = self.cur_pos
                 self.cur_pos = next_node
-                # Update speed.
-                if random.random() <= self.speed_prob:
-                    self.speed = speed
+                if 'speed' in g.node[next_node]:
+                    # Update to the next node speed if car's is higher.
+                    node_speed = g.node[next_node]['speed']
+                    if(random.random() <= self.speed_prob and
+                        self.speed_prob > node_speed):
+                        logging.debug("Car %d updated speed from %d to %d " %
+                            (self.id, self.speed, node_speed))
+                        self.speed = node_speed
                 env.update_car_position(self, self.prev_pos)
                 logging.debug("Car %d moved to node %d" % (self.id,
                     next_node))
@@ -57,9 +65,12 @@ class Car(object):
                 # Go to neighbours.
                 neighbours = g.neighbors(self.cur_pos)
                 for neig in neighbours:
-                    new_prob = g[self.cur_pos][neig]
+                    new_prob = g[self.cur_pos][neig]['weight']
                     prob += new_prob
-                    if random.random() <= prob:
+                    rand_prob = random.random()
+                    logging.debug("Car {} trying to go to {} with prob {} and rand_prob {}".format(
+                        self.id, neig, prob, rand_prob))
+                    if rand_prob <= prob:
                         self.prev_pos = self.cur_pos
                         self.cur_pos = neig
                         env.update_car_position(self, self.prev_pos)

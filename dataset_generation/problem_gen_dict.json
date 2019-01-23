@@ -1,0 +1,13 @@
+{
+    "min_nodes": 5,
+    "max_connections": 3.0,
+    "max_prohibitions": 0.5,
+    "max_red_signals": 0.5,
+    "max_speed": 7,
+    "min_speed": 1,
+    "speed_limits": 1.0,
+    "max_cars": 0.5,
+    "max_obs": 0.3,
+    "max_enfs": 0.3,
+    "max_range": 0.8
+}

@@ -45,7 +45,11 @@ class Car(object):
             rand_prob = random.random()
             logging.debug("Next node ({}) prob: {}".format(next_node, prob))
             logging.debug("Random prob: {}".format(rand_prob))
-            if rand_prob <= prob:
+            
+            if "car" not in g.node[next_node]:
+                g.node[next_node]["car"] = []
+
+            if rand_prob <= prob and not g.node[next_node]["car"]:
                 # Go to next node.
                 self.prev_pos = self.cur_pos
                 self.cur_pos = next_node
@@ -70,10 +74,14 @@ class Car(object):
                     rand_prob = random.random()
                     logging.debug("Car {} trying to go to {} with prob {} and rand_prob {}".format(
                         self.id, neig, prob, rand_prob))
-                    if rand_prob <= prob:
+                    if "car" not in g.node[neig]:
+                        g.node[neig]["car"] = []
+                    if rand_prob <= prob and not g.node[neig]["car"]:
                         self.prev_pos = self.cur_pos
                         self.cur_pos = neig
                         env.update_car_position(self, self.prev_pos)
                         logging.debug("Car %d moved to node %d" % (self.id,
                             neig))
                         return neig
+                logging.debug("Can't move cause no node was available.")
+                return self.cur_pos

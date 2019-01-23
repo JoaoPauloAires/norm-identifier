@@ -1,3 +1,4 @@
+import os
 import sys
 import car
 import copy
@@ -35,9 +36,9 @@ def build_graph(problem_dict):
         init_pos, _, _, _ = c[0].split('-')
         init_pos = int(init_pos)
         if 'car' not in G.node[init_pos]:
-            G.node[init_pos]['car'] = [ind]
+            G.node[init_pos]['car'] = [ind+1]
         else:
-            G.node[init_pos]['car'].append(ind)
+            G.node[init_pos]['car'].append(ind+1)
 
     # Set forbidden nodes.
     set_feature(G, problem_dict['p'], 'prohibition')
@@ -60,7 +61,7 @@ def build_cars(problem_dict):
     logging.debug("Building cars: {}".format(problem_dict['car']))
     for ind, c in enumerate(problem_dict['car']):
         init_pos, goal_pos, speed, speed_prob = c[0].split('-')
-        cars[ind] = car.Car(ind, int(init_pos), int(goal_pos), int(speed),
+        cars[ind+1] = car.Car(ind+1, int(init_pos), int(goal_pos), int(speed),
             float(speed_prob))
 
     return cars
@@ -71,17 +72,18 @@ def build_enfs(problem_dict):
     logging.debug("Building enfs: {}".format(problem_dict['enf']))
     for ind, enf in enumerate(problem_dict['enf']):
         nodes = map(int, enf[0].split('-'))
-        enfs[ind] = enforcer.Enforcer(ind, nodes)
+        enfs[ind+1] = enforcer.Enforcer(ind+1, nodes)
 
     return enfs
 
 
-def build_obs(problem_dict):
+def build_obs(problem_dict, problem_base_name):
     obs = dict()
     logging.debug("Building obs: {}".format(problem_dict['ob']))
     for ind, ob in enumerate(problem_dict['ob']):
         nodes = map(int, ob[0].split('-'))
-        obs[ind] = observer.Observer(ind, nodes, str(ind)+'.txt')
+        obs_path = 'observers/' + str(ind) + "_" + problem_base_name + ".txt"
+        obs[ind+1] = observer.Observer(ind+1, nodes, obs_path)
 
     return obs
 
@@ -97,6 +99,12 @@ def read_problem(problem_path):
     logging.debug("Start reading from {}".format(problem_path))
     lines = open(problem_path, 'r').readlines()
 
+    base, ext = os.path.splitext(problem_path)
+    if "/" in base:
+        _, problem_base_name = base.split("/")
+    else:
+        problem_base_name = base
+
     problem_dict = dict()
 
     for line in lines:
@@ -111,7 +119,7 @@ def read_problem(problem_path):
 
     G = build_graph(problem_dict)
     cars = build_cars(problem_dict)
-    obs = build_obs(problem_dict)
+    obs = build_obs(problem_dict, problem_base_name)
     enfs = build_enfs(problem_dict)
 
-    return G, cars, obs, enfs
+    return G, cars, obs, enfs, problem_base_name

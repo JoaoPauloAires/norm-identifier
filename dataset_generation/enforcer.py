@@ -63,8 +63,8 @@ class Enforcer(object):
                             found_violation = True
                             continue
 
-                    # Check if car is in a lower or equal speed defined
-                    # for the node.
+                    # Check if the car is in a lower or equal speed
+                    # defined for the node.
                     if 'speed' in g.node[n]:
                         if car.speed > g.node[n]['speed']:
                             violation = VIOLATION

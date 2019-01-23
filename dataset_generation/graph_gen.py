@@ -7,7 +7,7 @@ import problem_reader
 import networkx as nx
 import matplotlib.pyplot as plt
 
-logging.basicConfig(level=logging.DEBUG, filename='gen_dataset.log',
+logging.basicConfig(level=logging.DEBUG, filename='logs/gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 NODE_PROB = 0.5
@@ -15,13 +15,14 @@ NODE_PROB = 0.5
 # Create a file with all definitions of graph, states, and plan.
 class GenDataset(object):
     """Generate Dataset."""
-    def __init__(self, env):
+    def __init__(self, env, prob_name):
         logging.debug("Initiating GenDatsetObj.")
         self.env = env
+        self.prob_name = prob_name
         
     def save_graph(self):
         nx.draw(self.env.graph)
-        plt.savefig("graph.png")
+        plt.savefig("graphs/graph_"+self.prob_name+".png")
 
     def run_plans(self):
         # Run over plans.
@@ -47,15 +48,13 @@ class GenDataset(object):
                 enf_nodes += enf.verify_violation(self.env)                
             # Observers.
             for obs_id in self.env.obs:
-                for enf_node in enf_nodes:
-                    obs = self.env.obs[obs_id]
-                    enf_id, node, violation, _ = enf_node
-                    obs.save_state(self.env, enf_id, node, violation)
+                obs = self.env.obs[obs_id] # Get current observer.
+                obs.save_state(self.env, enf_nodes)
             prev_encode = env_encode
             prev_diff = diff
             env_encode = self.encode_env()
             diff = self.check_diff(prev_encode, env_encode)        
-    
+
     def check_diff(self, prev, cur):
 
         if len(prev) >= len(cur):
@@ -93,17 +92,15 @@ class GenDataset(object):
         return state_conf
 
 
-
 def main(problem_path):
     # Set graph, plans, and agents by reading from a file.
-    G, cars, obs, enfs = problem_reader.read_problem(problem_path)
+    G, cars, obs, enfs, prob_name = problem_reader.read_problem(problem_path)
     env = environment.Environment(G, NODE_PROB, cars, obs, enfs)
     logging.debug("Environment: Nodes: {}".format(env.graph.nodes))
     logging.debug("Environment: Conections: {}".format(env.graph.edges()))
-    gd = GenDataset(env)
-    # gd = GenDataset(G, plans, agents, output_file)
+    gd = GenDataset(env, prob_name)
+    gd.save_graph()
     gd.run_plans()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate dataset.')

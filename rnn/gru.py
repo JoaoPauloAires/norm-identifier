@@ -1,4 +1,5 @@
 import os
+import sys
 import keras
 import logging
 import numpy as np
@@ -7,15 +8,30 @@ from keras.utils import to_categorical
 from keras.layers import TimeDistributed
 from keras.callbacks import ModelCheckpoint, EarlyStopping, History
 from sklearn.model_selection import train_test_split
-from keras.layers import Dense, Activation, LSTM, Dropout, Embedding, Flatten
+from keras.layers import Dense, Activation, GRU, Dropout, Embedding, Flatten
 
 logging.basicConfig(level=logging.DEBUG, filename='logs/lstm.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
+def _start(gpu):
+    # Set the gpu on tensorflow.
+
+    import tensorflow as tf
+
+    # Set gpu.
+    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   # see issue #152
+    os.environ["CUDA_VISIBLE_DEVICES"]=str(gpu)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth=True
+    sess = tf.Session(config=config)
+
+
+_start(2)
+
 
 class LSTM_model():
     """Build, train, and test LSTM model."""
-    def __init__(self, dataset, vocabulary=3, hidden_size=128, dropout=0.5,
+    def __init__(self, dataset, vocabulary=3, hidden_size=64, dropout=0.5,
         n_classes=2, activation='softmax', loss='binary_crossentropy',
         optimizer='adam', epochs=10000, metrics=['accuracy']):
         sentence = """Instantiating LSTM class with the following arguments:
@@ -78,29 +94,32 @@ class LSTM_model():
         self.model = Sequential()
         self.model.add(Embedding(self.vocabulary, self.hidden_size,
             input_length=self.num_steps))
-        self.model.add(LSTM(self.hidden_size, return_sequences=True))
+        self.model.add(GRU(self.hidden_size, return_sequences=True))
         # model.add(LSTM(hidden_size, return_sequences=True))
         self.model.add(Dropout(self.dropout))
         self.model.add(Flatten())
         self.model.add(Dense(self.n_classes))
-        # self.model.add(Activation(self.activation))
+        self.model.add(Activation(self.activation))
 
         self.model.compile(loss=self.loss, optimizer=self.optimizer,
             metrics=self.metrics)
-        logging.debug(self.model.summary())
+        self.model.summary()
 
     def train(self, X_train, X_val, y_train, y_val):
         # Set callback names.
         dataset_name = self.dataset.split('/')[-1]
         name_base, _ = os.path.splitext(dataset_name)
 
-        print X_train.shape
-        print y_train.shape
+        #print X_train.shape
+        #print y_train.shape
+        #print X_train
+        #print y_train
+        #sys.exit(1)
 
         # Set callbacks
         hist = History()
-        early = EarlyStopping(monitor='val_loss', patience=1, verbose=1)
-        model_check = ModelCheckpoint('checkpoint_' + name_base + ".hdf5",
+        early = EarlyStopping(monitor='val_loss', patience=2, verbose=1)
+        model_check = ModelCheckpoint('models/checkpoint_' + name_base + ".hdf5",
          monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
         self.model.fit(X_train, y_train, batch_size=None, epochs=self.epochs,
@@ -109,7 +128,7 @@ class LSTM_model():
             steps_per_epoch=X_train.shape[1] / 32,
             validation_steps=X_val.shape[1] / 32)
 
-    def test(self):
+    def test(self, X_test, y_test):
         pass
 
 

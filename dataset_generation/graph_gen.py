@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 import argparse
@@ -7,6 +8,8 @@ import problem_reader
 import networkx as nx
 import matplotlib.pyplot as plt
 
+if os.path.isdir('./logs'):
+    os.mkdir('./logs')
 logging.basicConfig(level=logging.DEBUG, filename='logs/gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
@@ -22,6 +25,8 @@ class GenDataset(object):
         
     def save_graph(self):
         nx.draw(self.env.graph)
+        if not os.path.isdir('./graphs'):
+            os.mkdir('./graphs')
         plt.savefig("graphs/graph_"+self.prob_name+".png")
 
     def run_plans(self):

@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import json
@@ -90,6 +91,8 @@ class ProblemGen(object):
         
         # Get current time.
         currentDT = datetime.datetime.now()
+        if not os.path.isdir('./problems'):
+            os.mkdir('./problems')
         return "problems/problem_" + currentDT.strftime(
             "%d-%m-%Y_%H-%M-%S") + ".txt"
 

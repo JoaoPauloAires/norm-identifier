@@ -32,7 +32,7 @@ def _start(gpu):
 _start(2)
 
 
-class LSTM_model():
+class RNN_model():
     """Build, train, and test LSTM model."""
     def __init__(self, dataset, vocabulary=3, hidden_size=64, dropout=0.5,
         n_classes=2, activation='softmax', loss='binary_crossentropy',
@@ -130,17 +130,17 @@ class LSTM_model():
         self.model.fit(X_train, y_train, batch_size=None, epochs=self.epochs,
             verbose=1, callbacks=[hist,early, model_check], 
             validation_data=(X_val, y_val), shuffle=False,
-            steps_per_epoch=X_train.shape[1] / 32,
-            validation_steps=X_val.shape[1] / 32)
+            steps_per_epoch=X_train.shape[0] / 16,
+            validation_steps=X_val.shape[0] / 16)
 
     def test(self, X_test, y_test):
         pass
 
 
 if __name__ == '__main__':
-    lstm = LSTM_model(
+    gru = RNN_model(
         '../dataset_generation/dataset/46_problem_24-01-2019_10-37-29.txt')
-    X_train, X_val, X_test, y_train, y_val, y_test = lstm.process_dataset()
-    lstm.set_model()
-    lstm.train(X_train, X_val, y_train, y_val)
-    lstm.test(X_test, y_test)
+    X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
+    gru.set_model()
+    gru.train(X_train, X_val, y_train, y_val)
+    gru.test(X_test, y_test)

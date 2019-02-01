@@ -8,7 +8,7 @@ import problem_reader
 import networkx as nx
 import matplotlib.pyplot as plt
 
-if os.path.isdir('./logs'):
+if not os.path.isdir('./logs'):
     os.mkdir('./logs')
 logging.basicConfig(level=logging.DEBUG, filename='logs/gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
@@ -24,10 +24,11 @@ class GenDataset(object):
         self.prob_name = prob_name
         
     def save_graph(self):
-        nx.draw(self.env.graph)
-        if not os.path.isdir('./graphs'):
-            os.mkdir('./graphs')
-        plt.savefig("graphs/graph_"+self.prob_name+".png")
+        pass
+        #nx.draw(self.env.graph)
+        #if not os.path.isdir('./graphs'):
+        #    os.mkdir('./graphs')
+        #plt.savefig("graphs/graph_"+self.prob_name+".png")
 
     def run_plans(self):
         # Run over plans.
@@ -72,7 +73,9 @@ class GenDataset(object):
 
     def encode_env(self):
         state_conf = ''
-        
+        print self.env
+        print self.env.graph
+        print self.env.graph.nodes
         for n in self.env.graph.nodes:
             state_conf = state_conf + str(n)
 

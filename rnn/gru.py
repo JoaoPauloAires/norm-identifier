@@ -2,13 +2,18 @@ import os
 import sys
 import keras
 import logging
+import argparse
 import numpy as np
+import matplotlib.pyplot as plt
+from pylab import savefig
 from keras.models import Sequential
 from keras.utils import to_categorical
 from keras.layers import TimeDistributed
 from keras.callbacks import ModelCheckpoint, EarlyStopping, History
 from sklearn.model_selection import train_test_split
 from keras.layers import Dense, Activation, GRU, Dropout, Embedding, Flatten
+
+GPU_DEFAULT = 0
 
 if not os.path.isdir('./logs'):
     os.mkdir('./logs')
@@ -27,9 +32,6 @@ def _start(gpu):
     config = tf.ConfigProto()
     config.gpu_options.allow_growth=True
     sess = tf.Session(config=config)
-
-
-_start(2)
 
 
 class RNN_model():
@@ -108,38 +110,67 @@ class RNN_model():
             metrics=self.metrics)
         self.model.summary()
 
-    def train(self, X_train, X_val, y_train, y_val):
+    def train(self, X_train, X_val, y_train, y_val, plot=False):
         # Set callback names.
         dataset_name = self.dataset.split('/')[-1]
         name_base, _ = os.path.splitext(dataset_name)
 
-        #print X_train.shape
-        #print y_train.shape
-        #print X_train
-        #print y_train
-        #sys.exit(1)
-
-        # Set callbacks
+        # Set callbacks.
         hist = History()
-        early = EarlyStopping(monitor='val_loss', patience=2, verbose=1)
+        early = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
         if not os.path.isdir('models'):
             os.mkdir('./models')
-        model_check = ModelCheckpoint('models/checkpoint_' + name_base + ".hdf5",
-         monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
+        model_check = ModelCheckpoint(
+            'models/checkpoint_' + name_base + ".hdf5", monitor='val_loss',
+            verbose=1, save_best_only=True, mode='auto')
 
-        self.model.fit(X_train, y_train, batch_size=None, epochs=self.epochs,
-            verbose=1, callbacks=[hist,early, model_check], 
+        history = self.model.fit(X_train, y_train, batch_size=None,
+            epochs=self.epochs, verbose=1,
+            callbacks=[hist, early, model_check], 
             validation_data=(X_val, y_val), shuffle=False,
             steps_per_epoch=X_train.shape[0] / 16,
             validation_steps=X_val.shape[0] / 16)
+
+        if plot:
+            if not os.path.isdir('./plots'):
+                os.mkdir('./plots')
+            model_feat = "hs-%d_dp-%.1f_actv-%s_opt-%s" % (self.hidden_size,
+                self.dropout, self.activation, self.optimizer)
+            # summarize history for accuracy
+            plt.plot(history.history['acc'])
+            plt.plot(history.history['val_acc'])
+            plt.title('model accuracy')
+            plt.ylabel('accuracy')
+            plt.xlabel('epoch')
+            plt.legend(['train', 'val'], loc='upper left')
+            plot_name = "plots/model_accuracy_" + model_feat
+            savefig(plot_name + '.pdf', bbox_inches='tight')
+            # summarize history for loss
+            plt.plot(history.history['loss'])
+            plt.plot(history.history['val_loss'])
+            plt.title('model loss')
+            plt.ylabel('loss')
+            plt.xlabel('epoch')
+            plt.legend(['train', 'val'], loc='upper left')
+            plot_name = "plots/model_loss_" + model_feat
+            savefig(plot_name + '.pdf', bbox_inches='tight')
 
     def test(self, X_test, y_test):
         pass
 
 
 if __name__ == '__main__':
-    gru = RNN_model(
-        '../dataset_generation/dataset/46_problem_24-01-2019_10-37-29.txt')
+
+    parser = argparse.ArgumentParser(description='Train GRU.')
+    parser.add_argument('dataset', type=str, help="Path to dataset.")
+    parser.add_argument('--gpu', type=int, help="Indicate the gpu number.")
+
+    args = parser.parse_args()
+    if args.gpu:
+        _start(args.gpu)
+    else:
+        _start(GPU_DEFAULT)
+    gru = RNN_model(args.dataset)
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
     gru.set_model()
     gru.train(X_train, X_val, y_train, y_val)

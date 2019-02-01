@@ -18,7 +18,9 @@ class ProblemGen(object):
     def __init__(self, max_nodes, config, output_file=None):
 
         self.config = json.loads(open(config, 'r').read())
-        self.n_nodes = random.randint(self.config['min_nodes'], max_nodes)
+        min_nodes = self.config['min_nodes']
+        assert max_nodes >= min_nodes, "max_nodes can't be smaller than min_nodes."
+        self.n_nodes = random.randint(min_nodes, max_nodes)
         self.max_connections = int(
             self.n_nodes * self.config['max_connections'])
         self.max_prohibitions = int(

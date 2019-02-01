@@ -73,9 +73,6 @@ class GenDataset(object):
 
     def encode_env(self):
         state_conf = ''
-        print self.env
-        print self.env.graph
-        print self.env.graph.nodes
         for n in self.env.graph.nodes:
             state_conf = state_conf + str(n)
 

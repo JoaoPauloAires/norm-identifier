@@ -104,6 +104,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Keras saved models.
+*.hdf5
+
 # images
 *.jpg
 *.png

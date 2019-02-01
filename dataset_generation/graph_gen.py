@@ -8,7 +8,7 @@ import problem_reader
 import networkx as nx
 import matplotlib.pyplot as plt
 
-if os.path.isdir('./logs'):
+if not os.path.isdir('./logs'):
     os.mkdir('./logs')
 logging.basicConfig(level=logging.DEBUG, filename='logs/gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')

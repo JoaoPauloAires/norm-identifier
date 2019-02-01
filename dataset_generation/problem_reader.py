@@ -80,7 +80,7 @@ def build_enfs(problem_dict):
 def build_obs(problem_dict, problem_base_name):
     obs = dict()
     logging.debug("Building obs: {}".format(problem_dict['ob']))
-    if os.path.isdir('./observers'):
+    if not os.path.isdir('./observers'):
         os.mkdir('./observers')
     for ind, ob in enumerate(problem_dict['ob']):
         nodes = map(int, ob[0].split('-'))

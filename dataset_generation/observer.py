@@ -18,8 +18,10 @@ class Observer(object):
         self.max_node = ''
         self.obs_id = obs_id
         self.nodes = nodes
-        open(outputfile, 'w').close()
+        open(outputfile, 'w').close() # Reset file.
         self.output = outputfile
+        with open(self.output, 'w') as w_file:
+            w_file.write("sample class\n")
         self.max_car_at = ''
         self.max_traf_light = ''
         self.max_car_speed = ''

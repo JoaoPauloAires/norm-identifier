@@ -4,6 +4,7 @@ import keras
 import logging
 import argparse
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from pylab import savefig
 from keras.models import Sequential
@@ -59,25 +60,20 @@ class RNN_model():
 
     def process_dataset(self):
         # Read data.
-        data = open(self.dataset, 'r').readlines()
-
+        df = pd.read_csv(self.dataset, sep=' ')
         # Remove copies.
-        data = list(set(data))
-        logging.debug("Read data and obtained %d unique samples." % len(data))
+        df = df.drop_duplicates()
+        logging.debug("Read data and obtained %d unique samples." % len(df))
         
         # Turn input into lists.
-        X = []
-        Y = []
-        for i, smpl in enumerate(data):
-            x, y = smpl.split()
-            X.append([])
-            Y.append(int(y))
-            for c in x:
-                X[i].append(int(c))
-        X = np.array(X)
+        X = np.zeros((len(df), len(df['sample'][0])), dtype='int')
+        Y = df['class'].astype('int')
+        for i in xrange(len(df)):
+            for j in xrange(len(df['sample'][0])):
+                X[i][j] = int(df['sample'][i][j])
         print X.shape
         self.num_steps = X.shape[1]
-        Y = np.array(Y)
+        Y = Y.to_numpy(dtype='int')
         Y = to_categorical(Y)
 
         logging.debug("X example: %s\ny example: %s" % (X[0], Y[0]))

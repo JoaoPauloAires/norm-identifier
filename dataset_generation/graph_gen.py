@@ -24,11 +24,10 @@ class GenDataset(object):
         self.prob_name = prob_name
         
     def save_graph(self):
-        pass
-        #nx.draw(self.env.graph)
-        #if not os.path.isdir('./graphs'):
-        #    os.mkdir('./graphs')
-        #plt.savefig("graphs/graph_"+self.prob_name+".png")
+        nx.draw(self.env.graph)
+        if not os.path.isdir('./graphs'):
+           os.mkdir('./graphs')
+        plt.savefig("graphs/graph_"+self.prob_name+".png")
 
     def run_plans(self):
         # Run over plans.
@@ -77,7 +76,6 @@ class GenDataset(object):
             state_conf = state_conf + str(n)
 
             graph_node = self.env.graph.node[n]
-
             # Check car.
             if 'car' in graph_node:
                 if graph_node['car']:

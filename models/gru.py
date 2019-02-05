@@ -35,7 +35,7 @@ def _start(gpu):
 
 class RNN_model():
     """Build, train, and test LSTM model."""
-    def __init__(self, dataset, vocabulary=3, hidden_size=64, dropout=0.5,
+    def __init__(self, dataset, vocabulary=2, hidden_size=64, dropout=0.5,
         n_classes=2, activation='softmax', loss='binary_crossentropy',
         optimizer='adam', epochs=10000, metrics=['accuracy']):
         sentence = """Instantiating LSTM class with the following arguments:
@@ -58,9 +58,10 @@ class RNN_model():
 
     def process_dataset(self):
         
-        X, Y = preprocess.read_data(self.dataset, balanced=True)
-        
-        self.num_steps = X.shape[0]
+        X, Y = preprocess.read_dataset(self.dataset, balanced=True)
+        print X.shape 
+
+        self.num_steps = X.shape[1]
         Y = to_categorical(Y)
 
         logging.debug("X example: %s\ny example: %s" % (X[0], Y[0]))
@@ -74,7 +75,7 @@ class RNN_model():
         self.model.add(GRU(self.hidden_size))#, return_sequences=True))
         # model.add(LSTM(hidden_size, return_sequences=True))
         self.model.add(Dropout(self.dropout))
-        self.model.add(Flatten())
+        # self.model.add(Flatten())
         self.model.add(Dense(self.n_classes))
         self.model.add(Activation(self.activation))
 
@@ -86,6 +87,8 @@ class RNN_model():
         # Set callback names.
         dataset_name = self.dataset.split('/')[-1]
         name_base, _ = os.path.splitext(dataset_name)
+
+        print X_train[0]
 
         # Set callbacks.
         hist = History()
@@ -100,8 +103,8 @@ class RNN_model():
             epochs=self.epochs, verbose=1,
             callbacks=[hist, early, model_check], 
             validation_data=(X_val, y_val), shuffle=False,
-            steps_per_epoch=X_train.shape[0] / 16,
-            validation_steps=X_val.shape[0] / 16)
+            steps_per_epoch=X_train.shape[0] / 2,
+            validation_steps=X_val.shape[0] / 2)
 
         if plot:
             if not os.path.isdir('./plots'):
@@ -142,8 +145,11 @@ if __name__ == '__main__':
         _start(args.gpu)
     else:
         _start(GPU_DEFAULT)
-    gru = RNN_model(args.dataset)
+    gru = RNN_model(args.dataset, hidden_size=8)
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
+    print X_train.shape
+    print X_val.shape
     gru.set_model()
+    print gru.model
     gru.train(X_train, X_val, y_train, y_val)
     gru.test(X_test, y_test)

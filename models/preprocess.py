@@ -67,15 +67,16 @@ def split_dataset(X, Y, test_size=0.33, validation=True):
     # Split into train, val, and test set.
     X_train, X_test, y_train, y_test = train_test_split(X, Y,
         test_size=test_size, random_state=42)
+    X_train = X_train.reshape(1, X_train.shape[0], X_train.shape[1])
 
     if validation:
         X_test, X_val, y_test, y_val = train_test_split(X_test, y_test,
             test_size=0.5, random_state=42)
+        X_val = X_val.reshape(1, X_val.shape[0], X_val.shape[1])
+        X_test = X_test.reshape(X_test.shape[0], X_test.shape[1])
         return X_train, X_val, X_test, y_train, y_val, y_test
     else:
+        X_test = X_test.reshape(1, X_test.shape[0], X_test.shape[1])
         return X_train, X_test, y_train, y_test
-    # X_train = X_train.reshape(X_train.shape[0], X_train.shape[1])
-    # X_val = X_val.reshape(X_val.shape[0], X_val.shape[1])
-    # X_test = X_test.reshape(X_test.shape[0], X_test.shape[1])
-
+    
     

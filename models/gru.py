@@ -58,8 +58,8 @@ class RNN_model():
 
     def process_dataset(self):
         
-        X, Y = preprocess.read_data(self.dataset)
-        
+        X, Y = preprocess.read_dataset(self.dataset)
+        print X.shape 
         self.num_steps = X.shape[0]
         Y = to_categorical(Y)
 
@@ -144,6 +144,8 @@ if __name__ == '__main__':
         _start(GPU_DEFAULT)
     gru = RNN_model(args.dataset)
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
+    print X_train.shape
+    print X_val.shape
     gru.set_model()
     gru.train(X_train, X_val, y_train, y_val)
     gru.test(X_test, y_test)

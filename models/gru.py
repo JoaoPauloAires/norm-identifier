@@ -90,11 +90,11 @@ class RNN_model():
         # Set callbacks.
         hist = History()
         early = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-        if not os.path.isdir('models'):
-            os.mkdir('./models')
+        if not os.path.isdir('saved_models'):
+            os.mkdir('./saved_models')
         model_check = ModelCheckpoint(
-            'models/checkpoint_' + name_base + ".hdf5", monitor='val_loss',
-            verbose=1, save_best_only=True, mode='auto')
+            'saved_models/rnn_checkpoint_' + name_base + ".hdf5",
+            monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
         history = self.model.fit(X_train, y_train, batch_size=None,
             epochs=self.epochs, verbose=1,

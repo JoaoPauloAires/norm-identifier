@@ -38,10 +38,17 @@ class ProblemGen(object):
 
     def create_problem(self):
         
+        # Set the numbers.
+        n_connections = random.randint(self.n_nodes, self.max_connections)
+        n_cars = random.randint(1, self.max_cars)
+        n_obs = random.randint(1, self.max_obs)
+        n_enfs = random.randint(1, self.max_enfs)
+
         # Create output_file.
         if not self.output_file:
             logging.debug("Creating output_file file.")
-            self.output_file = self.get_outfile()
+            self.output_file = self.get_outfile(n_connections, n_cars, n_obs,
+                n_enfs)
 
         logging.debug("Output file: %s" % self.output_file)
         w_file = open(self.output_file, 'w')
@@ -53,7 +60,7 @@ class ProblemGen(object):
         logging.debug("Created nodes: %s" % line)
 
         # Create connections.
-        line, arcs = self.make_connections()
+        line, arcs = self.make_connections(n_connections)
         w_file.write(line)
         logging.debug("Created connections: %s" % line)
 
@@ -73,30 +80,29 @@ class ProblemGen(object):
         logging.debug("Created speed limits: %s" % line)
 
         # Create cars.
-        line = self.make_cars(arcs)
+        line = self.make_cars(n_cars, arcs)
         w_file.write(line)
         logging.debug("Created cars: %s" % line)
 
         # Create observers.
-        line = self.make_agents('o')
+        line = self.make_agents(n_obs, 'o')
         w_file.write(line)
         logging.debug("Created observers: %s" % line)
 
         # Create enforcers.
-        line = self.make_agents('e')
+        line = self.make_agents(n_enfs, 'e')
         w_file.write(line)
         logging.debug("Created enforcers: %s" % line)
 
         w_file.close()
 
-    def get_outfile(self):
-        
-        # Get current time.
-        currentDT = datetime.datetime.now()
+    def get_outfile(self, n_connections, n_cars, n_obs, n_enfs):
         if not os.path.isdir('./problems'):
             os.mkdir('./problems')
-        return "problems/problem_" + currentDT.strftime(
-            "%d-%m-%Y_%H-%M-%S") + ".txt"
+        # Add nodes, conections, cars, obs, and enfs.
+        file_name = "problems/problem_n-%d_con-%d_car-%d_ob-%d_enf-%d.txt" % (
+            self.n_nodes, n_connections, n_cars, n_obs, n_enfs)
+        return file_name
 
     def create_nodes(self):
         line = "n "
@@ -131,9 +137,8 @@ class ProblemGen(object):
         line = line[:-1] + "\n"
         return line
 
-    def make_cars(self, arcs):
+    def make_cars(self, n_cars, arcs):
 
-        n_cars = random.randint(1, self.max_cars)
         starts = []
         goals = []
         lines = """"""
@@ -154,16 +159,15 @@ class ProblemGen(object):
                     break
         return lines
 
-    def make_agents(self, a_type):
+    def make_agents(self, n_agents, a_type):
 
         if a_type == 'o':
-            n_agents = random.randint(1, self.max_obs)
-            logging.debug("Making %d observers." % n_agents)
+            logging.debug("Making %d enforcers." % n_agents)
         elif a_type == 'e':
-            n_agents = random.randint(1, self.max_enfs)
             logging.debug("Making %d enforcers." % n_agents)
         else:
             sys.exit(0)
+
         lines = """"""
 
         for i in xrange(n_agents):
@@ -216,9 +220,8 @@ class ProblemGen(object):
 
         return line
 
-    def make_connections(self):
+    def make_connections(self, n_connections):
 
-        n_connections = random.randint(self.n_nodes, self.max_connections)
         logging.debug("Making %d connections." % n_connections)
         connections = dict()
         line = "c "

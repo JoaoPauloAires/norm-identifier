@@ -1,5 +1,5 @@
 {
-    "min_nodes": 10,
+    "min_nodes": 2,
     "max_connections": 3.0,
     "max_prohibitions": 0.5,
     "max_red_signals": 0.5,

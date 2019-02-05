@@ -58,7 +58,7 @@ class RNN_model():
 
     def process_dataset(self):
         
-        X, Y = preprocess.read_data(self.dataset)
+        X, Y = preprocess.read_data(self.dataset, balanced=True)
         
         self.num_steps = X.shape[0]
         Y = to_categorical(Y)

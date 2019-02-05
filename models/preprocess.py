@@ -47,12 +47,10 @@ def balance_data(X, Y):
     xs = []
     ys = []
 
-    for ci, this_xs in class_xs:
-        
+    for ci, this_xs in class_xs:        
         x_ = this_xs[:min_elems] # Fill X.
         y_ = np.empty(min_elems) # Set y size.
         y_.fill(ci) # Fill with the class.
-
         xs.append(x_) 
         ys.append(y_)
 

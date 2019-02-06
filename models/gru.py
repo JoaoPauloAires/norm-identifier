@@ -103,8 +103,8 @@ class RNN_model():
             epochs=self.epochs, verbose=1,
             callbacks=[hist, early, model_check], 
             validation_data=(X_val, y_val), shuffle=False,
-            steps_per_epoch=X_train.shape[0] / 2,
-            validation_steps=X_val.shape[0] / 2)
+            steps_per_epoch=X_train.shape[0] / 16,
+            validation_steps=X_val.shape[0] / 16)
 
         if plot:
             if not os.path.isdir('./plots'):
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         _start(args.gpu)
     else:
         _start(GPU_DEFAULT)
-    gru = RNN_model(args.dataset, hidden_size=8)
+    gru = RNN_model(args.dataset)
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
     print X_train.shape
     print X_val.shape

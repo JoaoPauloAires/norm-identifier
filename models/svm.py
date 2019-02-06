@@ -1,3 +1,4 @@
+import argparse
 import preprocess
 from sklearn import svm
 from sklearn.metrics import accuracy_score, precision_score, recall_score
@@ -31,7 +32,13 @@ class SVMClassifier(object):
             acc, prec, rec, f1)
 
 if __name__ == '__main__':
-    clf = SVMClassifier('../dataset_generation/dataset/46_problem_24-01-2019_10-37-29.txt')
+
+    parser = argparse.ArgumentParser(description='Train SVM.')
+    parser.add_argument('dataset', type=str, help="Path to dataset.")
+
+    args = parser.parse_args()
+
+    clf = SVMClassifier(args.dataset)
     X_train, X_test, y_train, y_test = clf.process_dataset()
     clf.set_model()
     clf.train(X_train, y_train)

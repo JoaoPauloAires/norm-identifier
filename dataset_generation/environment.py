@@ -1,4 +1,5 @@
 import random
+import logging
 import networkx as nx
 
 
@@ -53,3 +54,24 @@ class Environment(object):
             self.graph.node[car.cur_pos]['car'].append(car.id)
         else:
             self.graph.node[car.cur_pos]['car'] = [car.id]
+
+    def check_cars(self):
+        """
+            Remove cars from environment if they are in the goal node.
+        """
+        remove_list = []
+
+        for car_id in self.cars:
+            car = self.cars[car_id]
+            if car.cur_pos == car.goal:
+                logging.debug(
+                    "Removing car %d from environment. It reached goal %d" % (
+                        car_id, car.goal))
+                index = self.graph.node[car.cur_pos]['car'].index(car_id)
+                self.graph.node[car.cur_pos]['car'].pop(index)
+
+                if car_id in self.cars:
+                    remove_list.append(car_id)
+                    
+        for car_id in remove_list:
+            del self.cars[car_id]

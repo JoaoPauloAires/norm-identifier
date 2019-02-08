@@ -7,7 +7,7 @@
     "min_speed": 1,
     "speed_limits": 1.0,
     "max_cars": 0.5,
-    "max_obs": 0.4,
-    "max_enfs": 0.4,
-    "max_range": 0.8
+    "max_obs": 0.5,
+    "max_enfs": 0.5,
+    "max_range": 0.2
 }

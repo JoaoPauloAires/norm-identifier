@@ -84,7 +84,7 @@ def build_obs(problem_dict, problem_base_name):
         os.mkdir('./observers')
     for ind, ob in enumerate(problem_dict['ob']):
         nodes = map(int, ob[0].split('-'))
-        obs_path = 'observers/' + str(ind) + "_" + problem_base_name + ".txt"
+        obs_path = 'observers/'+ str(ind+1) + "_" + problem_base_name + ".txt"
         obs[ind+1] = observer.Observer(ind+1, nodes, obs_path)
 
     return obs

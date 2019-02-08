@@ -55,10 +55,9 @@ class Enforcer(object):
                     if 'signal' in g.node[prev_node]:
                         if g.node[prev_node]['signal']:
                             violation = VIOLATION
-                            logging.debug("Enforcer %d detected a signal \
-                             violation in node %d commited by car %d." % (
-                                self.enf_id, n, car_id))
-                            verification.append((self.enf_id, n, violation,
+                            logging.debug("Enforcer %d detected a signal violation in node %d commited by car %d." % (
+                                prev_node, n, car_id))
+                            verification.append((prev_node, n, violation,
                                 car_id))
                             found_violation = True
                             continue

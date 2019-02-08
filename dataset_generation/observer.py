@@ -60,7 +60,7 @@ class Observer(object):
         # Add node.
         state_bin += ((len(self.max_node) - len(node_bin))  * '0'
             ) + node_bin
-        logging.debug("Built a new binary state: %s" % state_bin)
+        # logging.debug("Built a new binary state: %s" % state_bin)
 
         return state_bin
 
@@ -90,15 +90,14 @@ class Observer(object):
         """
             Save current state and if a violation has occurred.
         """
+        logging.debug("Starting to process observer %d" % self.obs_id)
         if not self.max_car_at:
             # Set max binary values for further binarization.
             self.set_max(env)
 
         state_bin = ''
         base_bin = ''
-        # enf_id, node, violation, _ = enf_node
-        # logging.debug("Saving state viewed by enforcer %d on node %d \
-        #  detecting a violation %d" % (enf_id, node, violation))
+
         for node in self.nodes:
             car_num = 0
             tf_li = 0
@@ -130,17 +129,36 @@ class Observer(object):
             # Add to the state representation.
             base_bin += bin_node
         
+        no_violation = True
+        detect_viol = []
         for node in self.nodes:
             for enf_node in enf_nodes:
                 enf_id, enf_node, violation, _ = enf_node
-                if node == enf_node:
-                    enf_id = bin(enf_id)[2:]
-                    tail_bin = ''
-                    # Add enforcer.
-                    tail_bin += ((len(self.max_enforcer) - len(enf_id)) * '0'
-                        ) + enf_id
-                    state_bin = base_bin + tail_bin
-                    with open(self.output, 'a') as wrt:
-                        logging.debug("Saving to %s state: %d, violation %d, and %s"
-                            % (self.output, node, violation, state_bin))
-                        wrt.write(state_bin + ' ' + str(violation) + '\n')
+                if violation:
+                    if node == enf_node and enf_id not in detect_viol:
+                        no_violation = False
+                        detect_viol.append(enf_id)
+                        enf_id = bin(enf_id)[2:]
+                        tail_bin = ''
+                        # Add enforcer.
+                        tail_bin += ((len(self.max_enforcer) - len(
+                            enf_id)) * '0'
+                            ) + enf_id
+                        state_bin = base_bin + tail_bin
+                        with open(self.output, 'a') as wrt:
+                            logging.debug(
+                                "Saving to %s state: %d, violation %d, and %s"
+                                % (self.output, node, violation,
+                                 state_bin))
+                            wrt.write(state_bin + ' ' + str(
+                                violation) + '\n')
+
+        logging.debug("No violation status: {}".format(no_violation))
+        if no_violation:
+            violation = 0 
+            tail_bin = len(self.max_enforcer) * '0'
+            state_bin = base_bin + tail_bin
+            with open(self.output, 'a') as wrt:
+                logging.debug("Saving to %s state: %d, violation %d, and %s"
+                    % (self.output, node, violation, state_bin))
+                wrt.write(state_bin + ' ' + str(violation) + '\n')

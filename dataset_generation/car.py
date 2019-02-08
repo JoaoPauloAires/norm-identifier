@@ -46,29 +46,44 @@ class Car(object):
             logging.debug("Next node ({}) prob: {}".format(next_node, prob))
             logging.debug("Random prob: {}".format(rand_prob))
             
+            car_in_node = None
             if "car" not in g.node[next_node]:
+                # Ensure that there is a key for car in node.
                 g.node[next_node]["car"] = []
+            elif g.node[next_node]["car"]:
+                car_in_node = g.node[next_node]["car"][0]
 
-            if rand_prob <= prob and not g.node[next_node]["car"]:
+            if rand_prob <= prob and (car_in_node == None
+             or car_in_node == self.id):
+                # If the rand_prob is smaller than prob and there is no 
+                # car in the node other than the car that is going to it.
                 # Go to next node.
                 self.prev_pos = self.cur_pos
                 self.cur_pos = next_node
                 if 'speed' in g.node[next_node]:
                     # Update to the next node speed if car's is higher.
                     node_speed = g.node[next_node]['speed']
-                    if(random.random() <= self.speed_prob and
-                        self.speed_prob > node_speed):
+                    speed_rand = random.random()
+                    if(speed_rand <= self.speed_prob and
+                        self.speed > node_speed):
                         logging.debug("Car %d updated speed from %d to %d " %
                             (self.id, self.speed, node_speed))
                         self.speed = node_speed
+
                 env.update_car_position(self, self.prev_pos)
                 logging.debug("Car %d moved to node %d" % (self.id,
                     next_node))
+                
                 return next_node
             else:
                 # Go to neighbours.
                 neighbours = g.neighbors(self.cur_pos)
                 for neig in neighbours:
+                    car_in_node =  None
+                    if neig == next_node:
+                        # Car must not try the same node twice.
+                        continue
+                        
                     new_prob = g[self.cur_pos][neig]['weight']
                     prob += new_prob
                     rand_prob = random.random()
@@ -76,7 +91,12 @@ class Car(object):
                         self.id, neig, prob, rand_prob))
                     if "car" not in g.node[neig]:
                         g.node[neig]["car"] = []
-                    if rand_prob <= prob and not g.node[neig]["car"]:
+                    elif g.node[neig]["car"]:
+                        car_in_node = g.node[neig]["car"][0]
+                    logging.debug("Car in node: {}".format(car_in_node))
+                    logging.debug("Condition to go to neighbour: {} and ({} or {})".format(rand_prob <= prob, car_in_node == None, car_in_node == self.id))
+                    if rand_prob <= prob and (car_in_node == None or
+                        car_in_node == self.id):
                         self.prev_pos = self.cur_pos
                         self.cur_pos = neig
                         env.update_car_position(self, self.prev_pos)

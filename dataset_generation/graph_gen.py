@@ -50,6 +50,7 @@ class GenDataset(object):
             for obs_id in self.env.obs:
                 obs = self.env.obs[obs_id] # Get current observer.
                 obs.save_state(self.env, enf_nodes)
+            self.env.modify()
             step += 1
 
 

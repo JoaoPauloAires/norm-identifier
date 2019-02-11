@@ -60,15 +60,7 @@ class Car(object):
                 # Go to next node.
                 self.prev_pos = self.cur_pos
                 self.cur_pos = next_node
-                if 'speed' in g.node[next_node]:
-                    # Update to the next node speed if car's is higher.
-                    node_speed = g.node[next_node]['speed']
-                    speed_rand = random.random()
-                    if(speed_rand <= self.speed_prob and
-                        self.speed > node_speed):
-                        logging.debug("Car %d updated speed from %d to %d " %
-                            (self.id, self.speed, node_speed))
-                        self.speed = node_speed
+                self.modify_speed(env, g, next_node)
 
                 env.update_car_position(self, self.prev_pos)
                 logging.debug("Car %d moved to node %d" % (self.id,
@@ -97,6 +89,7 @@ class Car(object):
                     logging.debug("Condition to go to neighbour: {} and ({} or {})".format(rand_prob <= prob, car_in_node == None, car_in_node == self.id))
                     if rand_prob <= prob and (car_in_node == None or
                         car_in_node == self.id):
+                        self.modify_speed(env, g, neig)
                         self.prev_pos = self.cur_pos
                         self.cur_pos = neig
                         env.update_car_position(self, self.prev_pos)
@@ -105,3 +98,21 @@ class Car(object):
                         return neig
                 logging.debug("Can't move cause no node was available.")
                 return self.cur_pos
+
+    def modify_speed(self, env, g, next_node):
+        if 'speed' in g.node[next_node]:
+            # Update to the next node speed if car's is higher.
+            node_speed = g.node[next_node]['speed']
+            speed_rand = random.random()
+            if(speed_rand <= self.speed_prob and
+                self.speed > node_speed):
+                logging.debug("Car %d updated speed from %d to %d " %
+                    (self.id, self.speed, node_speed))
+                self.speed = node_speed
+        else:
+            speed_rand = random.random()
+            if speed_rand <= self.speed_prob:
+                new_speed = random.randint(1, env.max_speed)
+                logging.debug("Car %d updated speed from %d to %d " %
+                    (self.id, self.speed, new_speed))
+                self.speed = new_speed

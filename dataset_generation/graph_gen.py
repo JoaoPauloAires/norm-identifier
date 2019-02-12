@@ -32,8 +32,7 @@ class GenDataset(object):
         # Run over plans.
         step = 0
         total_cars = len(self.env.cars)
-        share = int(total_cars / 10)
-        prev = total_cars
+        prev = 100
 
         while self.env.cars:
             logging.debug("Starting step %d." % step)
@@ -57,9 +56,10 @@ class GenDataset(object):
             step += 1
             cur_prog = len(self.env.cars)
             diff = total_cars - cur_prog
-            if diff % share == 0 and diff != prev:
-                print "Progress: %d%% of total." % (diff)
-                prev = diff
+            percent = int((diff/float(total_cars)) * 100)
+            if percent % 10 == 0 and percent != prev:
+                print "Progress: %d%% of total." % (percent)
+                prev = percent
 
 def main(problem_path):
     # Set graph, plans, and agents by reading from a file.

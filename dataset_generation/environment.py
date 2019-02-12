@@ -35,14 +35,21 @@ class Environment(object):
                 # green.
                 if random.random() <= self.node_prob:
                     cur_signal = self.graph.node[n]['signal']
-                    self.graph.node[n]['signal'] = (cur_signal * (-1)) + 1
+                    new_signal = (cur_signal * (-1)) + 1
+                    logging.debug(
+                        "Traffic light changed from %d to %d in node %d." % (
+                            cur_signal, new_signal, n))
+                    self.graph.node[n]['signal'] = new_signal
 
             elif 'prohibition' in self.graph.node[n]:
                 # If node has a prohibition status, try to modify it.
                 if random.random() <= self.node_prob:
                     cur_status = self.graph.node[n]['prohibition']
-                    self.graph.node[n]['prohibition'] = (cur_status * 
-                        (-1)) + 1                    
+                    new_status = (cur_status * (-1)) + 1
+                    logging.debug(
+                        "Prohibition changed from %d to %d in node %d." % (
+                            cur_status, new_status, n))
+                    self.graph.node[n]['prohibition'] = new_status                    
 
     def update_car_position(self, car, prev_pos):
         """

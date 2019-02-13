@@ -21,7 +21,13 @@ class GenDataset(object):
         logging.debug("Initiating GenDatsetObj.")
         self.env = env
         self.prob_name = prob_name
-        
+        self.all_obs = self.get_filename()
+    
+    def get_filename(self):
+        wrt = open("dataset/all_obs_" + self.prob_name + ".txt", 'w')
+        wrt.write("sample class\n")
+        return wrt
+
     def save_graph(self):
         nx.draw(self.env.graph)
         if not os.path.isdir('./graphs'):
@@ -51,7 +57,7 @@ class GenDataset(object):
             # Observers.
             for obs_id in self.env.obs:
                 obs = self.env.obs[obs_id] # Get current observer.
-                obs.save_state(self.env, enf_nodes)
+                obs.save_state(self.env, enf_nodes, self.all_obs)
             self.env.modify()
             step += 1
             cur_prog = len(self.env.cars)

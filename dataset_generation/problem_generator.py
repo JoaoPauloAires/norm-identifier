@@ -170,12 +170,15 @@ class ProblemGen(object):
 
         lines = """"""
 
+        if a_type == 'o':
+            r_nodes = random.randint(1, self.max_range)
+
         for i in xrange(n_agents):
             if a_type == 'o':
                 line = "ob "
             elif a_type == 'e':
                 line = "enf "
-            r_nodes = random.randint(1, self.max_range)
+                r_nodes = random.randint(1, self.max_range)
             used_nodes = []
 
             for j in xrange(r_nodes):

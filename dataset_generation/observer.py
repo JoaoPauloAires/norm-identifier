@@ -86,7 +86,7 @@ class Observer(object):
     #     self.max_prohibition = bin(prohib)[2:]
     #     self.max_enforcer = bin(n_enforcers)[2:]
 
-    def save_state(self, env, enf_nodes):
+    def save_state(self, env, enf_nodes, all_obs_wrt):
         """
             Save current state and if a violation has occurred.
         """
@@ -112,17 +112,18 @@ class Observer(object):
                 #     car = env.cars[car_id]
                 #     car_num = car_id
                 #     car_speed = car.speed
-                car_at = 1
+                if graph_node['car']:
+                    car_at = 1
             # Check prohibition.
             if 'prohibition' in graph_node:
                 # if graph_node['prohibition']:
-                prohib = 1
+                prohib = graph_node['prohibition']
             # Check speed limit.
             if 'speed_limit' in graph_node:
                 speed_lim = 1   # graph_node['speed_limit']
             # Check traffic signal.
             if 'signal' in graph_node:
-                tf_li = 1    # graph_node['signal']
+                tf_li = graph_node['signal']
             # Convert to binary 
             bin_node = '%d%d%d%d' % (car_at, prohib, speed_lim, tf_li)
             # self.binarize(env, node, car_num, car_speed, tf_li, speed_lim, prohib)
@@ -161,6 +162,8 @@ class Observer(object):
                                 "Saving to %s state: %d, violation %d, and %s"
                                 % (self.output, node, violation,
                                  state_bin))
+                            all_obs_wrt.write(state_bin + ' ' + str(violation)
+                             + '\n')
                             wrt.write(state_bin + ' ' + str(
                                 violation) + '\n')
 
@@ -172,4 +175,5 @@ class Observer(object):
             with open(self.output, 'a') as wrt:
                 logging.debug("Saving to %s state: %d, violation %d, and %s"
                     % (self.output, node, violation, state_bin))
+                all_obs_wrt.write(state_bin + ' ' + str(violation) + '\n')
                 wrt.write(state_bin + ' ' + str(violation) + '\n')

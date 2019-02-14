@@ -29,10 +29,11 @@ class GenDataset(object):
         return wrt
 
     def save_graph(self):
-        nx.draw(self.env.graph)
-        if not os.path.isdir('./graphs'):
-           os.mkdir('./graphs')
-        plt.savefig("graphs/graph_"+self.prob_name+".png")
+        pass
+        #nx.draw(self.env.graph)
+        #if not os.path.isdir('./graphs'):
+        #   os.mkdir('./graphs')
+        #plt.savefig("graphs/graph_"+self.prob_name+".png")
 
     def run_plans(self):
         # Run over plans.

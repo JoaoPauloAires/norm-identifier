@@ -30,16 +30,45 @@ class SVMClassifier(object):
         f1 = f1_score(y_test, y_pred)
         print "Acc: %.2f; Prec: %.2f; Recall: %.2f; F1_score: %.2f" % (
             acc, prec, rec, f1)
+        return acc, prec, rec, f1
+
+
+def run_svm(dataset):
+    clf = SVMClassifier(dataset)
+    X_train, X_test, y_train, y_test = clf.process_dataset()
+    clf.set_model()
+    clf.train(X_train, y_train)
+    return clf.test(X_test, y_test)
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train SVM.')
-    parser.add_argument('dataset', type=str, help="Path to dataset.")
+    parser.add_argument('env_name', type=str, help="Environment name.")
+    parser.add_argument('-d', '--dataset', type=str, help="Path to dataset.")
+    parser.add_argument('-f', '--folder', type=str,
+        help="Folder to datasets.")
 
     args = parser.parse_args()
 
-    clf = SVMClassifier(args.dataset)
-    X_train, X_test, y_train, y_test = clf.process_dataset()
-    clf.set_model()
-    clf.train(X_train, y_train)
-    clf.test(X_test, y_test)
+    if 'd' in args:
+        acc, prec, rec, f1 = run_svm(args.dataset)
+        
+    elif 'f' in args:
+        folder_path = args.folder
+        files = os.listdir(folder_path)
+        mean_acc, mean_prec, mean_rec, mean_f1 = 0, 0, 0, 0
+        for f in files:
+            if args.env_name not in f:
+                continue
+            acc, prec, rec, f1 = run_svm(f)
+            mean_acc += acc
+            mean_prec += prec
+            mean_rec += rec
+            mean_f1 += f1
+        n_dataset = len(files)
+        mean_acc = mean_acc/float(n_dataset)
+        mean_prec = mean_prec/float(n_dataset)
+        mean_rec = mean_rec/float(n_dataset)
+        mean_f1 = mean_f1/float(n_dataset)
+        print "Mean Acc: %.2f; Mean Prec: %.2f; Mean Rec: %.2f; Mean F1: %.2f" %
+        (mean_acc, mean_prec, mean_rec, mean_f1)

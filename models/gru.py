@@ -6,6 +6,7 @@ import argparse
 import preprocess
 import numpy as np
 import matplotlib.pyplot as plt
+from keras import metrics
 from pylab import savefig
 from keras.models import Sequential
 from keras.utils import to_categorical
@@ -88,11 +89,9 @@ class RNN_model():
         dataset_name = self.dataset.split('/')[-1]
         name_base, _ = os.path.splitext(dataset_name)
 
-        print X_train[0]
-
         # Set callbacks.
         hist = History()
-        early = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+        early = EarlyStopping(monitor='val_loss', patience=2, verbose=1)
         if not os.path.isdir('saved_models'):
             os.mkdir('./saved_models')
         model_check = ModelCheckpoint(
@@ -131,13 +130,35 @@ class RNN_model():
             savefig(plot_name + '.pdf', bbox_inches='tight')
 
     def test(self, X_test, y_test):
-        pass
+        dataset_name = self.dataset.split('/')[-1]
+        name_base, _ = os.path.splitext(dataset_name)
+        self.model.load_weights(
+            'saved_models/rnn_checkpoint_' + name_base + ".hdf5")
+        print self.model.evaluate(x=X_test, y=y_test)
+        w_file = open("pred_" + name_base + ".txt", 'w')
+        w_file.write("pred true\n")
+        for ind, x_smp in enumerate(X_test):
+            x_smp = x_smp.reshape(1, x_smp.shape[0])
+            pred = np.argmax(self.model.predict(x_smp))
+            true = np.argmax(y_test[ind])
+            w_file.write("%d %d\n" % (pred, true))
+
+
+def run_gru(dataset):
+    gru = RNN_model(dataset, metrics=[metrics.binary_accuracy])
+    X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
+    gru.set_model()
+    gru.train(X_train, X_val, y_train, y_val)
+    gru.test(X_test, y_test)
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train GRU.')
-    parser.add_argument('dataset', type=str, help="Path to dataset.")
+    parser.add_argument('env_name', type=str, help="Environment name.")
+    parser.add_argument('-d', '--dataset', type=str, help="Path to dataset.")
+    parser.add_argument('-f', '--folder', type=str,
+        help="Folder to datasets.")
     parser.add_argument('--gpu', type=int, help="Indicate the gpu number.")
 
     args = parser.parse_args()
@@ -145,11 +166,16 @@ if __name__ == '__main__':
         _start(args.gpu)
     else:
         _start(GPU_DEFAULT)
-    gru = RNN_model(args.dataset)
-    X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
-    print X_train.shape
-    print X_val.shape
-    gru.set_model()
-    print gru.model
-    gru.train(X_train, X_val, y_train, y_val)
-    gru.test(X_test, y_test)
+    if args.dataset:
+        run_gru(args.dataset)
+    elif args.folder:
+        folder_path = args.folder
+        files = os.listdir(folder_path)
+        for f in files:
+            if args.env_name not in f:
+                continue
+            obs_path = os.path.join(folder_path, f)
+            print obs_path
+            run_gru(obs_path)
+
+    # n-276_con-368_car-51_ob-36_enf-98

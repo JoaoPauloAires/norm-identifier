@@ -1,3 +1,4 @@
+import os
 import argparse
 import preprocess
 from sklearn import svm
@@ -50,17 +51,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if 'd' in args:
+    if args.dataset:
         acc, prec, rec, f1 = run_svm(args.dataset)
         
-    elif 'f' in args:
+    elif args.folder:
         folder_path = args.folder
         files = os.listdir(folder_path)
         mean_acc, mean_prec, mean_rec, mean_f1 = 0, 0, 0, 0
         for f in files:
             if args.env_name not in f:
                 continue
-            acc, prec, rec, f1 = run_svm(f)
+            obs_path = os.path.join(folder_path, f)
+            print obs_path
+            acc, prec, rec, f1 = run_svm(obs_path)
             mean_acc += acc
             mean_prec += prec
             mean_rec += rec
@@ -70,5 +73,4 @@ if __name__ == '__main__':
         mean_prec = mean_prec/float(n_dataset)
         mean_rec = mean_rec/float(n_dataset)
         mean_f1 = mean_f1/float(n_dataset)
-        print "Mean Acc: %.2f; Mean Prec: %.2f; Mean Rec: %.2f; Mean F1: %.2f" %
-        (mean_acc, mean_prec, mean_rec, mean_f1)
+        print "Mean Acc: %.2f; Mean Prec: %.2f; Mean Rec: %.2f; Mean F1: %.2f" % (mean_acc, mean_prec, mean_rec, mean_f1)

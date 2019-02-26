@@ -84,7 +84,7 @@ class RNN_model():
             metrics=self.metrics)
         self.model.summary()
 
-    def train(self, X_train, X_val, y_train, y_val, plot=False):
+    def train(self, X_train, X_val, y_train, y_val, plot=True):
         # Set callback names.
         dataset_name = self.dataset.split('/')[-1]
         name_base, _ = os.path.splitext(dataset_name)

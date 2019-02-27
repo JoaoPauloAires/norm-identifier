@@ -3,6 +3,28 @@
 In this folder, we organize our scripts of dataset generation.
 The process of generating a dataset consists of three steps:
 
+### TL;DR
+
+1 - Set the parameters in [problem_gen_dict.json](problem_gen_dict.json).
+
+2 - Execute [problem_generator.py](problem_generator.py):
+
+    ```python problem_generator.py max_nodes config_path versions```
+
+- max_nodes: maximum number allowed to generate the graph.
+
+- config_path: path to .json file containing the setup parameters to create the problem.
+
+- versions: number of problems to create.
+
+3 - Execute [graph_gen.py](graph_gen.py):
+
+    ```python graph_gen.py problem_path```
+
+- problem path: Path to the generated problem [use toy_problem](problems/toy_problem.prblm)
+
+4 - Check the [observers](observers/) folder to obtain the dataset for each observer. 
+
 ### 1 - Generate a Problem
 
 In order to generate a planning problem that will result in a graph, we use a setting file.

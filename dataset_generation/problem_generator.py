@@ -209,8 +209,10 @@ class ProblemGen(object):
                 if node not in used_nodes:
                     if limit in limits:
                         limits[limit].append(node)
+                        used_nodes.append(node)
                     else:
                         limits[limit] = [node]
+                        used_nodes.append(node)
                     break
 
         for limit in limits:
@@ -290,8 +292,7 @@ def main(max_nodes, config_path, versions):
     for i in xrange(versions):
         p_gen = ProblemGen(max_nodes, config_path)
         p_gen.create_problem()
-        time.sleep(1)
-
+        
 
 if __name__ == '__main__':
     

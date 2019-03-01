@@ -21,7 +21,7 @@ The process of generating a dataset consists of three steps:
 
     ```python graph_gen.py problem_path```
 
-- problem path: Path to the generated problem [use toy_problem](problems/toy-problem.prblm)
+- problem path: Path to the generated problem. To test, [use toy_problem](problems/toy-problem.prblm).
 
 4 - Check the [observers](observers/) folder to obtain the dataset for each observer. 
 

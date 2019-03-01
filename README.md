@@ -5,7 +5,6 @@ Our approach consists of training a model to learn violation states.
 We propose a traffic environment where observer agents try to learn traffic norms by observing cars moving through the streets.
 We divide this project into two sections: dataset generation and norm identification.
 
-
 ### Dataset Generation
 
 In this section, we have scripts to make a dataset from a road-like graph structure.

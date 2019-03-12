@@ -23,7 +23,7 @@ The process of generating a dataset consists of three steps:
 
 - problem path: Path to the generated problem. To test, [use toy_problem](problems/toy-problem.prblm).
 
-4 - Check the [observers](observers/) folder to obtain the dataset for each observer. 
+4 - The execution will generate a folder called 'Observers', open it to obtain the dataset for each observer. 
 
 ### 1 - Generate a Problem
 
@@ -91,7 +91,7 @@ Observers and enforcers can monitor the same nodes.
 
 ##### 1.2 - Problem Generator
 
-Now that we understand how a problem setting file works, we can generate automatically generate it using the [problem_generator.py](problem_generator.py) script.
+Now that we understand how a problem setting file works, we can automatically generate it using the [problem_generator.py](problem_generator.py) script.
 This script requires a single parameter that defines some limitations of what will be generated.
 We set these parameters in a (json file)[problem_gen_dict.json].
 It contains 10 parameters that we use as basis to create the graph.

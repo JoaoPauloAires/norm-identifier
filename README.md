@@ -5,6 +5,15 @@ Our approach consists of training a model to learn violation states.
 We propose a traffic environment where observer agents try to learn traffic norms by observing cars moving through the streets.
 We divide this project into two sections: dataset generation and norm identification.
 
+### Requirements to Run
+
+In this work, we use [NetworkX](https://networkx.github.io/) to generate the graphs.
+To install, run the following command:
+
+```
+  pip install networkx
+```
+
 ### Dataset Generation
 
 In this section, we have scripts to make a dataset from a road-like graph structure.

@@ -24,6 +24,8 @@ class GenDataset(object):
         self.all_obs = self.get_filename()
     
     def get_filename(self):
+        if not os.path.isdir('dataset'):
+            os.mkdir('./dataset')
         wrt = open("dataset/all_obs_" + self.prob_name + ".txt", 'w')
         wrt.write("sample class\n")
         return wrt
@@ -55,7 +57,8 @@ class GenDataset(object):
             # Cars.
             for car_id in self.env.cars:
                 car = self.env.cars[car_id]
-                car.move(self.env)
+                node = car.act(self.env)
+                self.env.move_car(car, node)
             # Remove those that are already in their goal nodes.
             self.env.check_cars()
             # Enforcers.
@@ -75,7 +78,8 @@ class GenDataset(object):
             if percent % 10 == 0 and percent != prev:
                 print "Progress: %d%% of total." % (percent)
                 prev = percent
-
+        logging.debug("Finished execution!")
+    
 def main(problem_path):
     # Set graph, plans, and agents by reading from a file.
     G, cars, obs, enfs, prob_name = problem_reader.read_problem(problem_path)

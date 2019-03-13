@@ -51,16 +51,80 @@ class Environment(object):
                             cur_status, new_status, n))
                     self.graph.node[n]['prohibition'] = new_status                    
 
-    def update_car_position(self, car, prev_pos):
+    def move_car(self, car, next_node):
+
+        logging.debug("Car %d in %d moving to node %d" % (car.id, car.cur_pos, 
+            next_node))
+
+        if car.cur_pos == next_node:
+            logging.debug("Car kept in the same place: %d" % next_node)
+            car.visited.append(next_node)
+            return next_node
+
+        cur_pos = car.cur_pos
+        g = self.graph
+        node_prob = g[cur_pos][next_node]["weight"]
+        rand_prob = random.random()
+        logging.debug("Next node ({}) prob: {}".format(next_node, node_prob))
+        logging.debug("Random prob: {}".format(rand_prob))
+        car_in_node = None
+        if "car" not in g.node[next_node]:
+            # Ensure that there is a key for car in node.
+            g.node[next_node]["car"] = []
+        elif g.node[next_node]["car"]:
+            car_in_node = g.node[next_node]["car"][0]
+        if rand_prob <= node_prob and not car_in_node:
+            car.prev_pos = car.cur_pos
+            car.cur_pos = next_node
+            car.visited.append(next_node)
+            self.update_car_position(car)
+            logging.debug("Car %d moved to node %d" % (car.id,
+                        next_node))
+        else:
+            # Go to neighbours.
+            neighbours = g.neighbors(car.cur_pos)
+            for neig in neighbours:
+                car_in_node = None
+                if neig == next_node:
+                    # Car must not try the same node twice.
+                    continue
+                    
+                new_prob = g[car.cur_pos][neig]['weight']
+                node_prob += new_prob
+                rand_prob = random.random()
+                logging.debug("Car {} trying to go to {} with prob {} and rand_prob {}".format(
+                    car.id, neig, node_prob, rand_prob))
+                if "car" not in g.node[neig]:
+                    g.node[neig]["car"] = []
+                elif g.node[neig]["car"]:
+                    car_in_node = g.node[neig]["car"][0]
+                logging.debug("Car in node: {}".format(car_in_node))
+                logging.debug("Condition to go to neighbour: {} and ({} or {})".format(rand_prob <= node_prob, car_in_node == None, car_in_node == car.id))
+                if rand_prob <= node_prob and (car_in_node == None or
+                    car_in_node == car.id):
+                    car.modify_speed(self, g, neig)
+                    car.prev_pos = car.cur_pos
+                    car.cur_pos = neig
+                    car.visited.append(neig)
+                    self.update_car_position(car)
+                    logging.debug("Car %d moved to node %d" % (car.id,
+                        neig))
+                    return neig
+            logging.debug("Can't move cause no node was available.")
+
+    def update_car_position(self, car):
         """
             Change the current position for car.
         """
-        index = self.graph.node[prev_pos]['car'].index(car.id)
+        car_id = car.id
+        prev_pos = car.prev_pos
+        cur_pos = car.cur_pos
+        index = self.graph.node[prev_pos]['car'].index(car_id)
         self.graph.node[prev_pos]['car'].pop(index)
-        if 'car' in self.graph.node[car.cur_pos]:
-            self.graph.node[car.cur_pos]['car'].append(car.id)
+        if 'car' in self.graph.node[cur_pos]:
+            self.graph.node[cur_pos]['car'].append(car_id)
         else:
-            self.graph.node[car.cur_pos]['car'] = [car.id]
+            self.graph.node[cur_pos]['car'] = [car_id]
 
     def check_cars(self):
         """

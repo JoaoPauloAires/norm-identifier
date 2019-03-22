@@ -13,7 +13,8 @@ if not os.path.isdir('./logs'):
 logging.basicConfig(level=logging.DEBUG, filename='logs/gen_dataset.log',
     filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
-NODE_PROB = 0.5
+NODE_PROB = 0.5 # Modification probability of a node, from red to green
+                # Or from forbidden to free.
 
 class GenDataset(object):
     """Generate Dataset."""

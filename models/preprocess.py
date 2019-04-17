@@ -4,6 +4,21 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
+def read_set(dataset):
+    # Read, organize, and return X and Y from dataset.
+    # Read data.
+    df = pd.read_csv(dataset_path, sep=' ')
+
+    # Set X and Y.
+    X = np.zeros((len(df), len(df['sample'][0])), dtype='int')
+    Y = df['class'].astype('int')
+    for i, row in df.iterrows():
+        for j, c in enumerate(row['sample']):
+            X[i][j] = int(c)
+    Y = Y.to_numpy(dtype='int')
+
+    return X, Y
+
 def read_dataset(dataset_path, balanced=True):
     # Read data.
     df = pd.read_csv(dataset_path, sep=' ')

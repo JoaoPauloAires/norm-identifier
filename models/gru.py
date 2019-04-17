@@ -2,6 +2,7 @@ import os
 import sys
 import keras
 import logging
+import datetime
 import argparse
 import preprocess
 import numpy as np
@@ -15,6 +16,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, History
 from keras.layers import Dense, Activation, GRU, Dropout, Embedding, Flatten
 
 GPU_DEFAULT = 0
+GENERIC_NAME = "generic_name_" + str(datetime.datetime.now())
 
 if not os.path.isdir('./logs'):
     os.mkdir('./logs')
@@ -36,16 +38,27 @@ def _start(gpu):
 
 class RNN_model():
     """Build, train, and test LSTM model."""
-    def __init__(self, dataset, vocabulary=2, hidden_size=64, dropout=0.5,
-        n_classes=2, activation='softmax', loss='binary_crossentropy',
-        optimizer='adam', epochs=10000, metrics=['accuracy']):
+    def __init__(self, dataset=None, train=None, test=None, vocabulary=2,
+        hidden_size=64, dropout=0.5, n_classes=2, activation='softmax',
+        loss='binary_crossentropy', optimizer='adam', epochs=10000,
+        metrics=['accuracy']):
         sentence = """Instantiating LSTM class with the following arguments:
         dataset_path: %s; vocabulary_size: %d; hidden_size: %d; dropout: %.1f;
         n_classes: %d; activation: %s; loss: %s; optimizer: %s""" % (dataset,
             vocabulary, hidden_size, dropout, n_classes, activation, loss,
             optimizer)
         logging.debug(sentence)
-        self.dataset =  dataset
+        self.dataset = None
+        self.train = None
+        self.test = None
+        if dataset:
+            self.dataset = dataset
+        elif train:
+            self.train = train
+            if test:
+                self.test = test
+            else:
+                sys.exit("Not test set found.")
         self.vocabulary = vocabulary
         self.hidden_size = hidden_size
         self.dropout = dropout
@@ -59,15 +72,22 @@ class RNN_model():
 
     def process_dataset(self):
         
-        X, Y = preprocess.read_dataset(self.dataset, balanced=True)
-        print X.shape 
-
-        self.num_steps = X.shape[1]
-        Y = to_categorical(Y)
-
-        logging.debug("X example: %s\ny example: %s" % (X[0], Y[0]))
+        if self.dataset
+            logging.debug("Processing dataset.")
+            X, Y = preprocess.read_dataset(self.dataset, balanced=True)
+            print X.shape
+            Y = to_categorical(Y)
+            logging.debug("X example: %s\ny example: %s" % (X[0], Y[0]))
+            X_train, X_val, X_test, y_train, y_val, y_test = preprocess.split_dataset(X, Y)
+            self.num_steps = X.shape[1]
+        elif self.train:
+            X_train, Y_train = preprocess.read_set(self.train)
+            X_train, X_val, y_train, y_val = preprocess.split_dataset(X_train,
+                Y_train, test_size=0.2, validation=False)
+            X_test, Y_test = preprocess.read_set(self.test)
+            self.num_steps = X_train.shape[1]
         
-        return preprocess.split_dataset(X, Y)
+        return X_train, X_val, X_test, y_train, y_val, y_test
 
     def set_model(self):
         self.model = Sequential()
@@ -86,8 +106,11 @@ class RNN_model():
 
     def train(self, X_train, X_val, y_train, y_val, plot=True):
         # Set callback names.
-        dataset_name = self.dataset.split('/')[-1]
-        name_base, _ = os.path.splitext(dataset_name)
+        if self.dataset:
+            dataset_name = self.dataset.split('/')[-1]
+            name_base, _ = os.path.splitext(dataset_name)
+        else:
+            name_base = GENERIC_NAME
 
         # Set callbacks.
         hist = History()
@@ -144,8 +167,11 @@ class RNN_model():
             w_file.write("%d %d\n" % (pred, true))
 
 
-def run_gru(dataset):
-    gru = RNN_model(dataset, metrics=[metrics.binary_accuracy])
+def run_gru(dataset=None, train=None, test=None):
+    if dataset:
+        gru = RNN_model(dataset, metrics=[metrics.binary_accuracy])
+    elif train:
+
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
     gru.set_model()
     gru.train(X_train, X_val, y_train, y_val)
@@ -157,8 +183,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train GRU.')
     parser.add_argument('env_name', type=str, help="Environment name.")
     parser.add_argument('-d', '--dataset', type=str, help="Path to dataset.")
-    parser.add_argument('-f', '--folder', type=str,
-        help="Folder to datasets.")
+    parser.add_argument('-tr', '--train', type=str, help="Path to train set.")
+    parser.add_argument('-te', '--test', type=str, help="Path to test set.")
+    parser.add_argument('-f', '--folder', type=str, help="Folder to datasets.")
     parser.add_argument('--gpu', type=int, help="Indicate the gpu number.")
 
     args = parser.parse_args()
@@ -167,7 +194,7 @@ if __name__ == '__main__':
     else:
         _start(GPU_DEFAULT)
     if args.dataset:
-        run_gru(args.dataset)
+        run_gru(dataset=args.dataset)
     elif args.folder:
         folder_path = args.folder
         files = os.listdir(folder_path)
@@ -176,6 +203,10 @@ if __name__ == '__main__':
                 continue
             obs_path = os.path.join(folder_path, f)
             print obs_path
-            run_gru(obs_path)
+            run_gru(dataset=obs_path)
+    elif args.train:
+        train_path = args.train
+        assert args.test != None, "You must pass a valid test set path."
+        test_path = args.test
 
-    # n-276_con-368_car-51_ob-36_enf-98
+        run_gru(train=train_path, test=test_path)

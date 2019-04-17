@@ -72,7 +72,7 @@ class RNN_model():
 
     def process_dataset(self):
         
-        if self.dataset
+        if self.dataset:
             logging.debug("Processing dataset.")
             X, Y = preprocess.read_dataset(self.dataset, balanced=True)
             print X.shape
@@ -169,9 +169,9 @@ class RNN_model():
 
 def run_gru(dataset=None, train=None, test=None):
     if dataset:
-        gru = RNN_model(dataset, metrics=[metrics.binary_accuracy])
+        gru = RNN_model(dataset=dataset, metrics=[metrics.binary_accuracy])
     elif train:
-
+        gru = RNN_model(train=train, test=test, metrics=[metrics.binary_accuracy])
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
     gru.set_model()
     gru.train(X_train, X_val, y_train, y_val)

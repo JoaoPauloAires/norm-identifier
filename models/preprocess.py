@@ -7,9 +7,12 @@ from sklearn.model_selection import train_test_split
 def read_set(dataset):
     # Read, organize, and return X and Y from dataset.
     # Read data.
-    df = pd.read_csv(dataset_path, sep=' ')
+    df = pd.read_csv(dataset, sep=' ')
 
     # Set X and Y.
+    print df
+    print df['sample'][0]
+    sys.exit(0)
     X = np.zeros((len(df), len(df['sample'][0])), dtype='int')
     Y = df['class'].astype('int')
     for i, row in df.iterrows():

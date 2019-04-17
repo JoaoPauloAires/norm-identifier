@@ -124,10 +124,10 @@ def save_data(data, test_share):
             test_size, train_size))
 
         w_train = open(os.path.join(output_folder,
-            str(file_key)) + "_train.csv", 'w')
+            str(file_key)) + "_train.txt", 'w')
         w_train.write("sample class\n")
         w_test = open(os.path.join(output_folder,
-            str(file_key)) + "_test.csv", 'w')
+            str(file_key)) + "_test.txt", 'w')
         w_test.write("sample class\n")
 
         for ind, file_id in enumerate(file_struct):
@@ -135,9 +135,9 @@ def save_data(data, test_share):
                 sample, clss = tup
                 if ind < test_size:
                     # Add states to test file.
-                    w_test.write("%s %d\n" % (sample, clss))
+                    w_test.write(sample + ' ' + str(clss) + "\n")
                 else:
-                    w_train.write("%s %d\n" % (sample, clss))
+                    w_train.write(sample + ' ' + str(clss) + "\n")
     return True
 
 def main(folder_path, test_share):

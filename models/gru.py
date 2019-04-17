@@ -39,7 +39,7 @@ def _start(gpu):
 class RNN_model():
     """Build, train, and test LSTM model."""
     def __init__(self, dataset=None, train=None, test=None, vocabulary=2,
-        hidden_size=64, dropout=0.5, n_classes=2, activation='softmax',
+        hidden_size=64, dropout=0.5, n_classes=1, activation='sigmoid',
         loss='binary_crossentropy', optimizer='adam', epochs=10000,
         metrics=['accuracy']):
         sentence = """Instantiating LSTM class with the following arguments:
@@ -49,14 +49,14 @@ class RNN_model():
             optimizer)
         logging.debug(sentence)
         self.dataset = None
-        self.train = None
-        self.test = None
+        self.train_path = None
+        self.test_path = None
         if dataset:
             self.dataset = dataset
         elif train:
-            self.train = train
+            self.train_path = train
             if test:
-                self.test = test
+                self.test_path = test
             else:
                 sys.exit("Not test set found.")
         self.vocabulary = vocabulary
@@ -80,11 +80,11 @@ class RNN_model():
             logging.debug("X example: %s\ny example: %s" % (X[0], Y[0]))
             X_train, X_val, X_test, y_train, y_val, y_test = preprocess.split_dataset(X, Y)
             self.num_steps = X.shape[1]
-        elif self.train:
-            X_train, Y_train = preprocess.read_set(self.train)
+        elif self.train_path:
+            X_train, y_train = preprocess.read_set(self.train_path)
             X_train, X_val, y_train, y_val = preprocess.split_dataset(X_train,
-                Y_train, test_size=0.2, validation=False)
-            X_test, Y_test = preprocess.read_set(self.test)
+                y_train, test_size=0.2, validation=False)
+            X_test, y_test = preprocess.read_set(self.test_path)
             self.num_steps = X_train.shape[1]
         
         return X_train, X_val, X_test, y_train, y_val, y_test
@@ -104,7 +104,7 @@ class RNN_model():
             metrics=self.metrics)
         self.model.summary()
 
-    def train(self, X_train, X_val, y_train, y_val, plot=True):
+    def train(self, X_train, X_val, y_train, y_val, plot=False):
         # Set callback names.
         if self.dataset:
             dataset_name = self.dataset.split('/')[-1]
@@ -153,8 +153,12 @@ class RNN_model():
             savefig(plot_name + '.pdf', bbox_inches='tight')
 
     def test(self, X_test, y_test):
-        dataset_name = self.dataset.split('/')[-1]
-        name_base, _ = os.path.splitext(dataset_name)
+        if self.dataset:
+            dataset_name = self.dataset.split('/')[-1]
+            name_base, _ = os.path.splitext(dataset_name)
+        else:
+            name_base = GENERIC_NAME
+            
         self.model.load_weights(
             'saved_models/rnn_checkpoint_' + name_base + ".hdf5")
         print self.model.evaluate(x=X_test, y=y_test)

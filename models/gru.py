@@ -40,7 +40,7 @@ class RNN_model():
     """Build, train, and test LSTM model."""
     def __init__(self, dataset=None, train=None, test=None, vocabulary=2,
         hidden_size=64, dropout=0.5, n_classes=1, activation='sigmoid',
-        loss='binary_crossentropy', optimizer='adam', epochs=10000,
+        loss='binary_crossentropy', optimizer='adam', epochs=30,
         metrics=['accuracy']):
         sentence = """Instantiating LSTM class with the following arguments:
         dataset_path: %s; vocabulary_size: %d; hidden_size: %d; dropout: %.1f;
@@ -162,7 +162,8 @@ class RNN_model():
         self.model.load_weights(
             'saved_models/rnn_checkpoint_' + name_base + ".hdf5")
         print self.model.evaluate(x=X_test, y=y_test)
-        w_file = open("pred_" + name_base + ".txt", 'w')
+        file_name = "pred_" + name_base + ".txt"
+        w_file = open(file_name, 'w')
         w_file.write("pred true\n")
         for ind, x_smp in enumerate(X_test):
             x_smp = x_smp.reshape(1, x_smp.shape[0])
@@ -170,16 +171,21 @@ class RNN_model():
             true = np.argmax(y_test[ind])
             w_file.write("%d %d\n" % (pred, true))
 
+        return file_name
+
 
 def run_gru(dataset=None, train=None, test=None):
     if dataset:
         gru = RNN_model(dataset=dataset, metrics=[metrics.binary_accuracy])
     elif train:
-        gru = RNN_model(train=train, test=test, metrics=[metrics.binary_accuracy])
+        gru = RNN_model(train=train, test=test, metrics=[
+            metrics.binary_accuracy])
     X_train, X_val, X_test, y_train, y_val, y_test = gru.process_dataset()
     gru.set_model()
     gru.train(X_train, X_val, y_train, y_val)
-    gru.test(X_test, y_test)
+    file_name = gru.test(X_test, y_test)
+
+    return file_name
 
 
 if __name__ == '__main__':
